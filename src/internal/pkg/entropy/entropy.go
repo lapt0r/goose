@@ -5,12 +5,12 @@ import
 	"math"
 )
 
-func GetCharacterCount(text string) map[string]int {
-	var result = make(map[string]int)
-	for char := range text {
-		var count = result[string(char)]
+func GetCharacterCount(text string) map[rune]int {
+	var result = make(map[rune]int)
+	for _,char := range text {
+		var count = result[char]
 		count += 1
-		result[string(char)] = count
+		result[char] = count
 	}
 	return result
 }
@@ -18,18 +18,18 @@ func GetCharacterCount(text string) map[string]int {
 func GetPValues(text string) []float64 {
 	var charmap = GetCharacterCount(text)
 	var totalcharcount int = len(text)
-	var result = make([]float64, totalcharcount)
+	var result = make([]float64, len(charmap))
 
 	var index = 0
-	for char := range charmap {
-		var p_val = float64(charmap[char]) / float64(totalcharcount)
+	for _, count := range charmap {
+		var p_val = float64(count) / float64(totalcharcount)
 		result[index] = p_val
 		index += 1
 	}
 	return result
 }
 
-func ComputeEntropy(text string) float64 {
+func GetShannonEntropy(text string) float64 {
 	var pvals = GetPValues(text)
 	var entropy = float64(0)
 	for _,p_val := range pvals {
