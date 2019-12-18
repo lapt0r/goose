@@ -1,3 +1,6 @@
 #go artifacts
 bin/*
 pkg/*
+# go packages
+**github.com/*
+**golang.org/*
