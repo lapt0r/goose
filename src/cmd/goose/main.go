@@ -1,29 +1,32 @@
 package main
 
-import(
-	"os"
-	"log"
+import (
 	"bufio"
-	"fmt"
 	"flag"
+	"fmt"
+	"internal/app"
+	"log"
+	"os"
 )
 
 func main() {
 	file, err := os.Open("assets/goose_header.txt")
-	var target_path = flag.String("target", "NOT_SET", "The target file or folder")
+	var targetPath = flag.String("target", "NOT_SET", "The target file or folder")
 	flag.Parse()
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer file.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
 
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        fmt.Println(scanner.Text())
-    }
-
-	fmt.Printf("Loading targets from [%v]..\n", *target_path)
-    if err := scanner.Err(); err != nil {
-        log.Fatal(err)
-    }
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Initializing Goose with target [%v]..\n", *targetPath)
+	app.Init("", *targetPath)
+	fmt.Printf("Initialized with %v rules.  Running..", app.RuleCount())
+	app.Run()
 }

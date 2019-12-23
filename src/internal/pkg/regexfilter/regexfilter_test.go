@@ -6,6 +6,14 @@ import (
 )
 
 var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password", Confidence: 0.5, Severity: 1}
+var flexrule = configuration.ScanRule{Name: "Generic 8+ byte rule", Rule: "", Confidence: 0.9, Severity: 1}
+
+func TestEmptyFinding(t *testing.T) {
+	testFinding := Finding{}
+	if !testFinding.IsEmpty() {
+		t.Errorf("Expected empty finding but got %v", testFinding)
+	}
+}
 
 func TestEvaluateRuleMatch(t *testing.T) {
 	teststring := "password = foobar"

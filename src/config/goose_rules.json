@@ -1,0 +1,20 @@
+[
+    {
+        "Name" : "Generic 8+ byte secret",
+        "Rule" : "(?i)(?:\\w+)?\\s(?:\\w+)?(?:password|token|key\\s|secret)\\s(=|:|<-|:=)\\s[\"']?([a-z0-9!@#$%^&*()?,.<>;~`\\-=_]{8,})[\"']?",
+        "Confidence" : 0.7,
+        "Severity" : 1
+    },
+    {
+        "Name" : "AWS Key",
+        "Rule" : "[\"']AKIA\\w+[\"']",
+        "Confidence" : 0.95,
+        "Severity" : 0
+    },
+    {
+        "Name" : "Suspicious Base64 string",
+        "Rule" : "(?i)[a-z0-9\\-_+/]{8,}",
+        "Confidence" : 0.5,
+        "Severity" : 2
+    }
+]

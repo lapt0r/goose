@@ -30,9 +30,8 @@ func (finding *Finding) String() string {
 }
 
 //ScanFile takes a path and a scan rule and returns a slice of findings
-func ScanFile(targetpath string, rule configuration.ScanRule) []Finding {
+func ScanFile(targetpath string, rule configuration.ScanRule, fchannel chan Finding) {
 	file, err := os.Open(targetpath)
-	result := make([]Finding, 5) //kb todo: tune this number.  expected # of findings per file?
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,11 +43,11 @@ func ScanFile(targetpath string, rule configuration.ScanRule) []Finding {
 		finding := evaluateRule(scanner.Text(), rule)
 		if !finding.IsEmpty() {
 			finding.Location = fmt.Sprintf("%v : %v", targetpath, index)
-			_ = append(result, finding)
+			fchannel <- finding
 		}
 		index++
 	}
-	return result
+	close(fchannel)
 }
 
 func evaluateRule(line string, rule configuration.ScanRule) Finding {
