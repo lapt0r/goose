@@ -40,7 +40,7 @@ func ScanFile(targetpath string, rule configuration.ScanRule) []Finding {
 	scanner := bufio.NewScanner(file)
 	index := 0
 	for scanner.Scan() {
-		finding := evaluateRule(scanner.Text(), index, rule)
+		finding := evaluateRule(scanner.Text(), rule)
 		if !finding.IsEmpty() {
 			finding.Location = fmt.Sprintf("%v : %v", targetpath, index)
 			_ = append(result, finding)
@@ -50,7 +50,7 @@ func ScanFile(targetpath string, rule configuration.ScanRule) []Finding {
 	return result
 }
 
-func evaluateRule(line string, index int, rule configuration.ScanRule) Finding {
+func evaluateRule(line string, rule configuration.ScanRule) Finding {
 	//kb todo: these should be constructed somewhere else and referenced by pointer
 	matcher, err := regexp.Compile(rule.Rule)
 	if err != nil {
