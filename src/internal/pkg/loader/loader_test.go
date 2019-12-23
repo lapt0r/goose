@@ -9,7 +9,7 @@ func TestGetByteCharsetValidASCIIString(t *testing.T) {
 	var testbytes = []byte("My Super Cool Test String")
 	var testResult = getByteCharset(testbytes)
 	if testResult.Charset != "ISO-8859-1" {
-		t.Errorf("Chardet mismatch.  Expected ASCII but got %v", testResult.Charset)
+		t.Errorf("Chardet mismatch.  Expected ISO-8859-1 but got %v", testResult.Charset)
 	}
 }
 
