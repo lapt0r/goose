@@ -1,8 +1,8 @@
 package loader
-import(
-	"testing"
+
+import (
 	"crypto/rand"
-	"fmt"
+	"testing"
 )
 
 func TestGetByteCharsetValidASCIIString(t *testing.T) {
@@ -14,7 +14,7 @@ func TestGetByteCharsetValidASCIIString(t *testing.T) {
 }
 
 func TestGetByteCharSetRandomBytes(t *testing.T) {
-	var b = make([]byte,100)
+	var b = make([]byte, 100)
 	var _, err = rand.Read(b)
 	if err != nil {
 		panic(err)

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var testrule = configuration.ScanRule{"TestRule", "password", 0.5, 1}
+var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password", Confidence: 0.5, Severity: 1}
 
 func TestEvaluateRuleMatch(t *testing.T) {
 	teststring := "password = foobar"

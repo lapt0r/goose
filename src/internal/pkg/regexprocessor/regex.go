@@ -59,7 +59,12 @@ func evaluateRule(line string, rule configuration.ScanRule) Finding {
 	}
 	match := matcher.FindString(line)
 	if match != "" {
-		return Finding{match, "NOTSET", rule.Rule, rule.Confidence, rule.Severity}
+		return Finding{
+			Match:      match,
+			Location:   "NOTSET",
+			Rule:       rule.Rule,
+			Confidence: rule.Confidence,
+			Severity:   rule.Severity}
 	}
 	return Finding{}
 }
