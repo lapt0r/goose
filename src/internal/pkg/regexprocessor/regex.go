@@ -15,12 +15,13 @@ type Finding struct {
 	Location   string
 	Rule       string
 	Confidence float64
+	Severity   int
 }
 
 //IsEmpty returns true if all fields are default, false otherwise
 func (finding *Finding) IsEmpty() bool {
 	return finding.Match == "" && finding.Confidence == 0.0 &&
-		finding.Location == "" && finding.Rule == ""
+		finding.Location == "" && finding.Rule == "" && finding.Severity == 0
 }
 
 //Stringer for Finding struct
@@ -58,7 +59,7 @@ func evaluateRule(line string, rule configuration.ScanRule) Finding {
 	}
 	match := matcher.FindString(line)
 	if match != "" {
-		return Finding{match, "NOTSET", rule.Rule, rule.Confidence}
+		return Finding{match, "NOTSET", rule.Rule, rule.Confidence, rule.Severity}
 	}
 	return Finding{}
 }
