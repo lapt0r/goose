@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"internal/pkg/configuration"
-	"log"
-	"os"
+	"internal/pkg/loader"
 	"regexp"
+	"strings"
 )
 
 //Finding contains the matched line, the location of the match, and the confidence of the match
@@ -30,19 +30,15 @@ func (finding *Finding) String() string {
 }
 
 //ScanFile takes a path and a scan rule and returns a slice of findings
-func ScanFile(targetpath string, rule configuration.ScanRule, fchannel chan Finding) {
-	file, err := os.Open(targetpath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
+func ScanFile(target loader.ScanTarget, rule configuration.ScanRule, fchannel chan Finding) {
+	input, _ := loader.GetBytesFromScanTarget(target)
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(strings.NewReader(string(input)))
 	index := 0
 	for scanner.Scan() {
 		finding := evaluateRule(scanner.Text(), rule)
 		if !finding.IsEmpty() {
-			finding.Location = fmt.Sprintf("%v : %v", targetpath, index)
+			finding.Location = fmt.Sprintf("%v : %v", target.Path, index)
 			fchannel <- finding
 		}
 		index++

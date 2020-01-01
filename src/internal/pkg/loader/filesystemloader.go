@@ -2,32 +2,12 @@ package loader
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/gogs/chardet"
 )
-
-//GetTargets returns all files that are children of the target path
-func GetTargets(parent string) []string {
-	var files []string
-	err := filepath.Walk(parent, func(path string, info os.FileInfo, err error) error {
-		info, infoerr := os.Stat(path)
-		if infoerr == nil && !info.IsDir() {
-			//todo: validate file format
-			if ValidateContent(path) {
-				files = append(files, path)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		//kb todo - handle errors gracefully when file processing
-		log.Fatal(err)
-	}
-	return files
-}
 
 //ValidateContent ensures that the contents of the text are valid binary encodings
 func ValidateContent(path string) bool {
@@ -62,4 +42,13 @@ func getByteCharset(b []byte) *chardet.Result {
 		log.Fatal(err)
 	}
 	return result
+}
+
+//stream abstraction for filesystem ScanTarget
+func getFileSystemBytes(path string) []byte {
+	bytes, err := ioutil.ReadFile(path)
+	if err == nil {
+		return bytes
+	}
+	return nil
 }

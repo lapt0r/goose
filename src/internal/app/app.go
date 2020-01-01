@@ -8,7 +8,7 @@ import (
 )
 
 var rules []configuration.ScanRule
-var targets []string
+var targets []loader.ScanTarget
 
 //RuleCount : Get count of rules initialized by application.
 func RuleCount() int {
