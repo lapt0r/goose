@@ -5,6 +5,7 @@ import (
 	"internal/pkg/configuration"
 	"internal/pkg/loader"
 	"internal/pkg/regexfilter"
+	"path/filepath"
 )
 
 var rules []configuration.ScanRule
@@ -22,7 +23,9 @@ func Init(configpath string, targetpath string) {
 		configpath = "config/goose_rules.json"
 	}
 	rules = configuration.LoadConfiguration(configpath)
-	targets = loader.GetTargets(targetpath)
+	absoluteTargetPath, _ := filepath.Abs(targetpath)
+	fmt.Printf("Initializing Goose with target [%v]..\n", absoluteTargetPath)
+	targets = loader.GetTargets(absoluteTargetPath)
 	fmt.Printf("\nGot [%v] targets\n", len(targets))
 }
 

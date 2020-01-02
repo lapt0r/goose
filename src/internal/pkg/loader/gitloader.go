@@ -40,7 +40,7 @@ func LoadGitTargets(commit *gitobject.Commit, parent string) ([]ScanTarget, erro
 		if fileErr == io.EOF {
 			break
 		}
-		result = append(result, ScanTarget{Path: fmt.Sprintf("%v:%v:%v", parent, commit.Hash, file.Name), Type: "git"})
+		result = append(result, ScanTarget{Path: fmt.Sprintf("%v|%v|%v", parent, commit.Hash, file.Name), Type: "git"})
 	}
 	return result, err
 }
@@ -59,7 +59,7 @@ func getCommitData(file *gitobject.File) []byte {
 }
 
 func rehydratePathString(path string) (string, string, string) {
-	components := strings.Split(path, ":")
+	components := strings.Split(path, "|")
 	return components[0], components[1], components[2]
 }
 

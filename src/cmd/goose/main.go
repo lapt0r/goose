@@ -25,7 +25,6 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Initializing Goose with target [%v]..\n", *targetPath)
 	app.Init("", *targetPath)
 	fmt.Printf("Initialized with %v rules.  Running..", app.RuleCount())
 	app.Run()

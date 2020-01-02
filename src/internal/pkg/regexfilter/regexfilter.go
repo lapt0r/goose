@@ -25,7 +25,7 @@ func (finding *Finding) IsEmpty() bool {
 }
 
 //Stringer for Finding struct
-func (finding *Finding) String() string {
+func (finding Finding) String() string {
 	return fmt.Sprintf("Finding [%v] Location [%v] Rule [%v] Confidence [%v]", finding.Match, finding.Location, finding.Rule, finding.Confidence)
 }
 
