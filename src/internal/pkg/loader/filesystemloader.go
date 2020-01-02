@@ -3,7 +3,6 @@ package loader
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/gogs/chardet"
@@ -26,7 +25,10 @@ func ValidateContent(path string) bool {
 	//kb note: important to slice to the actual number of bytes read
 	var charSet = getByteCharset(headerBytes[0:bytesRead])
 	//kb note: should support other encodings other than ISO-8859-1
-	fmt.Printf(charSet.Charset)
+	if charSet == nil {
+		//parsing failure.  Return false
+		return false
+	}
 	if charSet.Charset == "ISO-8859-1" {
 		validBytes = true
 	}
@@ -37,9 +39,8 @@ func getByteCharset(b []byte) *chardet.Result {
 	var detector = chardet.NewTextDetector()
 	var result, err = detector.DetectBest(b)
 	if err != nil {
-		fmt.Printf("Error getting character bytes: %v", err)
 		//kb todo - graceful error handling here? This will kill file parsing as is
-		log.Fatal(err)
+		fmt.Printf("Error getting character bytes: %v", err)
 	}
 	return result
 }

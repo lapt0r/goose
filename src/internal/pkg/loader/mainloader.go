@@ -36,6 +36,9 @@ func GetTargets(parent string) []ScanTarget {
 		//kb note : currently, walk function does not actually return an error.  This block will never be hit in normal operation
 		log.Fatal(err)
 	}
+	//load git targets
+	gitTargets, _ := EnumerateRepositoryCommits(parent)
+	files = append(files, gitTargets...)
 	return files
 }
 

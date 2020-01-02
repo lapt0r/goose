@@ -11,24 +11,37 @@ import (
 	gitobject "gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-//LoadGitTargets : Loads content from a provided git hash and parent directory
-func LoadGitTargets(commit string, parent string) ([]ScanTarget, error) {
+//EnumerateRepositoryCommits : Enumerate the commmits in a target repository and return the assembled ScanTargets
+func EnumerateRepositoryCommits(parent string) ([]ScanTarget, error) {
 	var result []ScanTarget
 	repository, openerr := git.PlainOpen(parent)
 	if openerr != nil {
-		fmt.Printf("Error opening repository %v : %v", parent, openerr)
+		log.Fatal(openerr)
 	}
-
-	//kb todo: enumerate all commits from repository and refactor this out to a method call to append targets to result
-	commithash := gitplumbing.NewHash(commit)
-	commitContent, err := repository.CommitObject(commithash)
-	fileiterator, _ := commitContent.Files()
+	options := git.LogOptions{Order: git.LogOrderCommitterTime}
+	commits, _ := repository.Log(&options)
 	for {
-		file, err := fileiterator.Next()
-		if err == io.EOF {
+		next, err := commits.Next()
+		if err != nil {
 			break
 		}
-		result = append(result, ScanTarget{Path: fmt.Sprintf("%v:%v:%v", parent, commit, file.Name), Type: "git"})
+		targets, _ := LoadGitTargets(next, parent)
+		result = append(result, targets...)
+	}
+	//kb todo : this will swallow internal errors.  OK?
+	return result, nil
+}
+
+//LoadGitTargets : Loads content from a provided git hash and parent directory
+func LoadGitTargets(commit *gitobject.Commit, parent string) ([]ScanTarget, error) {
+	var result []ScanTarget
+	fileiterator, err := commit.Files()
+	for {
+		file, fileErr := fileiterator.Next()
+		if fileErr == io.EOF {
+			break
+		}
+		result = append(result, ScanTarget{Path: fmt.Sprintf("%v:%v:%v", parent, commit.Hash, file.Name), Type: "git"})
 	}
 	return result, err
 }
