@@ -14,22 +14,21 @@ import (
 //EnumerateRepositoryCommits : Enumerate the commmits in a target repository and return the assembled ScanTargets
 func EnumerateRepositoryCommits(parent string) ([]ScanTarget, error) {
 	var result []ScanTarget
-	repository, openerr := git.PlainOpen(parent)
-	if openerr != nil {
-		log.Fatal(openerr)
-	}
-	options := git.LogOptions{Order: git.LogOrderCommitterTime}
-	commits, _ := repository.Log(&options)
-	for {
-		next, err := commits.Next()
-		if err != nil {
-			break
+	repository, err := git.PlainOpen(parent)
+	if err == nil {
+		options := git.LogOptions{Order: git.LogOrderCommitterTime}
+		commits, _ := repository.Log(&options)
+		for {
+			next, err := commits.Next()
+			if err != nil {
+				//this is an EOF error which tells us to terminate the loop
+				break
+			}
+			targets, err := LoadGitTargets(next, parent)
+			result = append(result, targets...)
 		}
-		targets, _ := LoadGitTargets(next, parent)
-		result = append(result, targets...)
 	}
-	//kb todo : this will swallow internal errors.  OK?
-	return result, nil
+	return result, err
 }
 
 //LoadGitTargets : Loads content from a provided git hash and parent directory
@@ -55,6 +54,7 @@ func getCommitData(file *gitobject.File) []byte {
 			return []byte(contents)
 		}
 	}
+	//kb todo: return error here?
 	return nil
 }
 
