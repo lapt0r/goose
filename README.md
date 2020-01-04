@@ -33,4 +33,5 @@ Community contributions are welcome:  bug reports, feature requests, feature imp
 
 ### Contributors
 
-@lapt0r
+- https://github.com/lapt0r
+- https://github.com/FX-Wood
