@@ -37,11 +37,8 @@ func ValidateContent(path string) bool {
 
 func getByteCharset(b []byte) *chardet.Result {
 	var detector = chardet.NewTextDetector()
-	var result, err = detector.DetectBest(b)
-	if err != nil {
-		//kb todo - graceful error handling here? This will kill file parsing as is
-		fmt.Printf("Error getting character bytes: %v", err)
-	}
+	//note : detector will return an error if a character set is not detected.  Unknown charsets should be ignored
+	var result, _ = detector.DetectBest(b)
 	return result
 }
 
