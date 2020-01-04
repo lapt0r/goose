@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"io/ioutil"
 	"testing"
 )
 
@@ -9,6 +10,20 @@ var parentDirectory = "../../../../"
 var expectedContent = `# Goose
 It's a lovely day in source control, and you are a horrible goose.
 `
+
+func TestGitRepositoryLoadInvalidRepository(t *testing.T) {
+	directory, err := ioutil.TempDir("", "InvalidGitRepo")
+	if err != nil {
+		t.Error(err)
+	}
+	targets, enumErr := EnumerateRepositoryCommits(directory)
+	if enumErr == nil {
+		t.Errorf("Expected enumerating an invalid repository to fail")
+	}
+	if targets != nil {
+		t.Errorf("Enumerating an invalid repository returned non-nil results")
+	}
+}
 
 func TestGitCommitLoad(t *testing.T) {
 	content := getGitBytesImpl(parentDirectory, firstCommitString, "README.md")

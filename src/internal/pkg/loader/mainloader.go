@@ -37,8 +37,11 @@ func GetTargets(parent string) []ScanTarget {
 		log.Fatal(err)
 	}
 	//load git targets
-	gitTargets, _ := EnumerateRepositoryCommits(parent)
-	files = append(files, gitTargets...)
+	//kb todo: walk subdirectories of target and enumerate repository commits of every detected repo
+	gitTargets, gitErr := EnumerateRepositoryCommits(parent)
+	if gitErr == nil {
+		files = append(files, gitTargets...)
+	}
 	return files
 }
 
