@@ -13,11 +13,12 @@ Go installation instructions can be found [here](https://golang.org/doc/install)
 
 ## Usage
 
-Goose is currently a tool for manual auditing of local source repositories.  Regex rules use Google RE2 syntax documented [here](https://github.com/google/re2/wiki/Syntax).
+Goose can be run in pipeline (default) or interactive mode.  Pipeline mode is "silent" other than a JSON blob of results returned to standard output.  Interactive mode will provide updates on number of files scanned as well as pretty-printed results.  Regex rules use Google RE2 syntax documented [here](https://github.com/google/re2/wiki/Syntax).
 
 ### Arguments
 
- * -target : The target directory to scan.  This will enumerate all files with a valid text encoding as well as the git history and scan using the provided regex rules.
+ * -target \<string> : The target directory to scan.  This will enumerate all files with a valid text encoding as well as the git history and scan using the provided regex rules.
+ * -interactive : Runs Goose in interactive mode.  Default behavior is now pipeline-compatible.
 
 ## Acknowledgements
 
