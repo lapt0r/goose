@@ -1,10 +1,12 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"internal/pkg/configuration"
 	"internal/pkg/loader"
 	"internal/pkg/regexfilter"
+	"log"
 	"path/filepath"
 )
 
@@ -17,20 +19,24 @@ func RuleCount() int {
 }
 
 //Init : initalizes the Goose application
-func Init(configpath string, targetpath string) {
-	//todo
+func Init(configpath string, targetpath string, interactive bool) {
 	if configpath == "" {
 		configpath = "config/goose_rules.json"
 	}
+	//todo : application configuration tuning knobs (confidence intervals, etc)
 	rules = configuration.LoadConfiguration(configpath)
 	absoluteTargetPath, _ := filepath.Abs(targetpath)
-	fmt.Printf("Initializing Goose with target [%v]..\n", absoluteTargetPath)
+	if interactive {
+		fmt.Printf("Initializing Goose with target [%v]..\n", absoluteTargetPath)
+	}
 	targets = loader.GetTargets(absoluteTargetPath)
-	fmt.Printf("\nGot [%v] targets\n", len(targets))
+	if interactive {
+		fmt.Printf("\nGot [%v] targets\n", len(targets))
+	}
 }
 
 //Run : runs the Goose application
-func Run() {
+func Run(interactive bool) {
 	var result []regexfilter.Finding
 	for _, target := range targets {
 		for _, rule := range rules {
@@ -44,9 +50,23 @@ func Run() {
 			}
 		}
 	}
-	fmt.Println("\n--- Scanning complete ---")
-	fmt.Printf("[%v] results\n", len(result))
-	for _, finding := range result {
-		fmt.Printf("FINDING\n-----\n%v\n", finding)
+	outputResults(result, interactive)
+}
+
+func outputResults(result []regexfilter.Finding, interactive bool) {
+	if interactive {
+		fmt.Println("\n--- Scanning complete ---")
+		fmt.Printf("[%v] results\n", len(result))
+		for _, finding := range result {
+			fmt.Printf("FINDING\n-----\n%v\n", finding)
+		}
+	} else {
+		json, err := json.Marshal(result)
+		if err != nil {
+			//todo : should this terminate?
+			log.Fatal(err)
+		}
+		//todo(?) : support file output target or rely on caller piping to stream?
+		fmt.Printf(string(json))
 	}
 }
