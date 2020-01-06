@@ -28,10 +28,6 @@ This tool builds upon the prior work of a whole bunch of folks:
 * detect-secrets https://github.com/Yelp/detect-secrets
 * GitRob https://github.com/michenriksen/gitrob
 
-## Contributing
-
-Community contributions are welcome:  bug reports, feature requests, feature improvements, architecture improvements, style improvements.  Test coverage should abide by the "campsite rule" : leave it better than you found it.  Be excellent to each other.
-
 ### Contributors
 
 - https://github.com/lapt0r
