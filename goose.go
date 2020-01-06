@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"internal/app"
 	"log"
 	"os"
+
+	"github.com/lapt0r/goose/internal/app"
 )
 
 func main() {

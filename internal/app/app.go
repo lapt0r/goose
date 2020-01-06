@@ -3,11 +3,12 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"internal/pkg/configuration"
-	"internal/pkg/loader"
-	"internal/pkg/regexfilter"
 	"log"
 	"path/filepath"
+
+	"github.com/lapt0r/goose/internal/pkg/configuration"
+	"github.com/lapt0r/goose/internal/pkg/loader"
+	"github.com/lapt0r/goose/internal/pkg/regexfilter"
 )
 
 var rules []configuration.ScanRule
