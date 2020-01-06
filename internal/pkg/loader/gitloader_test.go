@@ -6,7 +6,7 @@ import (
 )
 
 var firstCommitString = "17ed9ccdcc40b4704a2eb4df57afeb344932362b"
-var parentDirectory = "../../../../"
+var parentDirectory = "../../../"
 var expectedContent = `# Goose
 It's a lovely day in source control, and you are a horrible goose.
 `
