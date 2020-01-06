@@ -1,7 +1,7 @@
 package regexfilter
 
 import (
-	"internal/pkg/configuration"
+	"github.com/lapt0r/goose/internal/pkg/configuration"
 	"testing"
 )
 
