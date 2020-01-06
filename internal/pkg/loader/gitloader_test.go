@@ -35,7 +35,6 @@ func TestGitCommitLoad(t *testing.T) {
 
 func TestGitTargetEnumeration(t *testing.T) {
 	targets, enumErr := EnumerateRepositoryCommits(parentDirectory)
-	t.Logf("Found %v targets", len(targets))
 	if enumErr != nil {
 		t.Errorf("Error enumerating repository : %v", enumErr)
 	}
