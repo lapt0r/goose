@@ -3,10 +3,11 @@ package regexfilter
 import (
 	"bufio"
 	"fmt"
-	"internal/pkg/configuration"
-	"internal/pkg/loader"
 	"regexp"
 	"strings"
+
+	"github.com/lapt0r/goose/internal/pkg/configuration"
+	"github.com/lapt0r/goose/internal/pkg/loader"
 )
 
 //Finding contains the matched line, the location of the match, and the confidence of the match
