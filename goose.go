@@ -32,7 +32,7 @@ func printHeader() {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		fmt.Println("%v", scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
