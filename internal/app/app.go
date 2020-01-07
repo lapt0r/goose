@@ -68,6 +68,6 @@ func outputResults(result []regexfilter.Finding, interactive bool) {
 			log.Fatal(err)
 		}
 		//todo(?) : support file output target or rely on caller piping to stream?
-		fmt.Printf(string(json))
+		fmt.Printf("%v", string(json))
 	}
 }

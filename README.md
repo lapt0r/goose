@@ -1,4 +1,6 @@
 # Goose
+[![Go Report Card](https://goreportcard.com/badge/github.com/lapt0r/goose)](https://goreportcard.com/report/github.com/lapt0r/goose)
+
 It's a lovely day in source control, and you are a horrible tool.
 
 ## Background
