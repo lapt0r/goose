@@ -4,7 +4,7 @@ about: Create a report to help us improve
 title: 'Bug Report : <BUG SUMMARY>'
 labels: 'bug'
 assignees: ''
-
+project: 'Feature Work'
 ---
 
 **Describe the bug**
