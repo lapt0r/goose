@@ -15,3 +15,6 @@ If you have an idea for a feature or enhancement, **please**:
 - Have a use case or user story for your feature.  Be specific, we would like to avoid "feature creep" outside of Goose's primary purpose.
 - File a Feature Request issue.
 
+## Documentation
+
+Goose currently does not have a "Documentation" issue type.  This is an open issue!

@@ -32,3 +32,4 @@ This tool builds upon the prior work of a whole bunch of folks:
 
 - https://github.com/lapt0r
 - https://github.com/FX-Wood
+- https://github.com/hackimed3s
