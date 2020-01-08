@@ -1,6 +1,11 @@
 #go artifacts
 bin/*
 pkg/*
+go.sum
 # go packages
 **github.com/*
 **golang.org/*
+# VSCode artifacts
+.vscode/*
+# binaries
+*.exe

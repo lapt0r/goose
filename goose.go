@@ -12,9 +12,14 @@ import (
 
 func main() {
 
-	var targetPath = flag.String("target", "NOT_SET", "The target file or folder")
-	var interactive = flag.Bool("interactive", false, "Runs the application in interactive mode")
+	var targetPath = flag.String("target", "", "[REQUIRED] The target file or folder")
+	var interactive = flag.Bool("interactive", false, "[DEFAULT:FALSE] Runs the application in interactive mode")
 	flag.Parse()
+	if *targetPath == "" {
+		flag.CommandLine.PrintDefaults()
+		os.Exit(0)
+	}
+
 	app.Init("", *targetPath, *interactive)
 	if *interactive {
 		printHeader()
