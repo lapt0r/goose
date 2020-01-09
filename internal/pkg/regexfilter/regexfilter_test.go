@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password", Confidence: 0.5, Severity: 1}
+var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password = \\w{4,}", Confidence: 0.5, Severity: 1}
 var flexrule = configuration.ScanRule{Name: "Generic 8+ byte rule", Rule: "", Confidence: 0.9, Severity: 1}
 
 func TestEmptyFinding(t *testing.T) {
@@ -21,12 +21,20 @@ func TestEvaluateRuleMatch(t *testing.T) {
 	if result.IsEmpty() {
 		t.Errorf("Expected 1 result but got an empty result")
 	}
-	if result.Match != "password" {
+	if result.Match != teststring {
 		t.Errorf("Expected match to be 'password' but was '%v'", result.Match)
 	}
 	if result.Confidence != testrule.Confidence ||
 		result.Rule != testrule.Rule {
 		t.Errorf("Expected confidence 0.5 and severity 1 but found confidence %v and severity %v", result.Confidence, result.Severity)
+	}
+}
+
+func TestEvaluateRuleMatchWithReflect(t *testing.T) {
+	teststring := "password = \"password123\""
+	result := evaluateRule(teststring, testrule)
+	if !result.IsEmpty() {
+		t.Errorf("Expected no result but got 1 result")
 	}
 }
 

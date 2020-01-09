@@ -8,6 +8,7 @@ import (
 
 	"github.com/lapt0r/goose/internal/pkg/configuration"
 	"github.com/lapt0r/goose/internal/pkg/loader"
+	"github.com/lapt0r/goose/internal/pkg/reflectorfilter"
 )
 
 //Finding contains the matched line, the location of the match, and the confidence of the match
@@ -54,7 +55,7 @@ func evaluateRule(line string, rule configuration.ScanRule) Finding {
 		panic(err)
 	}
 	match := matcher.FindString(line)
-	if match != "" {
+	if match != "" && reflectorfilter.IsReflected(match) == false {
 		return Finding{
 			Match:      match,
 			Location:   "NOTSET",
