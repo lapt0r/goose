@@ -6,6 +6,12 @@
         "Severity" : 1
     },
     {
+        "Name" : "Array-like 8+ byte secret",
+        "Rule" : "(?i)[{([].*(password|token|secret|key[ ,]?)(\\(\\))?\\s?[,:=]\\s?\"([a-z0-9!@#$%^&*()?,.<>;~`\\-=_]{8,})\"",
+        "Confidence" : 0.7,
+        "Severity" : 1
+    },
+    {
         "Name" : "AWS Key",
         "Rule" : "[\"']AKIA\\w+[\"']",
         "Confidence" : 0.95,
