@@ -3,8 +3,10 @@ package regexfilter
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/lapt0r/goose/internal/pkg/configuration"
 	"github.com/lapt0r/goose/internal/pkg/loader"
@@ -32,9 +34,12 @@ func (finding Finding) String() string {
 }
 
 //ScanFile takes a path and a scan rule and returns a slice of findings
-func ScanFile(target loader.ScanTarget, rule configuration.ScanRule, fchannel chan Finding) {
-	input, _ := loader.GetBytesFromScanTarget(target)
-
+func ScanFile(target loader.ScanTarget, rule configuration.ScanRule, fchannel chan Finding, waitgroup *sync.WaitGroup) {
+	defer waitgroup.Done()
+	input, err := loader.GetBytesFromScanTarget(target)
+	if err != nil {
+		log.Fatal(err)
+	}
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
 	index := 0
 	for scanner.Scan() {
@@ -45,7 +50,6 @@ func ScanFile(target loader.ScanTarget, rule configuration.ScanRule, fchannel ch
 		}
 		index++
 	}
-	close(fchannel)
 }
 
 func evaluateRule(line string, rule configuration.ScanRule) Finding {

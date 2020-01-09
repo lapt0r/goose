@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"sync"
 
 	"github.com/lapt0r/goose/internal/pkg/configuration"
 	"github.com/lapt0r/goose/internal/pkg/loader"
@@ -39,18 +40,36 @@ func Init(configpath string, targetpath string, interactive bool) {
 //Run : runs the Goose application
 func Run(interactive bool) {
 	var result []regexfilter.Finding
-	for _, target := range targets {
-		for _, rule := range rules {
-			ruleChannel := make(chan regexfilter.Finding)
-			go regexfilter.ScanFile(target, rule, ruleChannel)
-			for f := range ruleChannel {
-				//kb todo: application config for confidence threshold
-				if !f.IsEmpty() && f.Confidence > 0.65 {
+	var ruleChannel = make(chan regexfilter.Finding, 4)
+	var bufferChannel = make(chan bool)
+	var wg sync.WaitGroup
+	//anonymous buffer thread to empty the channel to prevent deadlocking
+	go func() {
+		for {
+			select {
+			case <-bufferChannel:
+				break
+			case f, ok := <-ruleChannel:
+				if ok && f.Confidence > 0.65 {
 					result = append(result, f)
 				}
+			default:
+				//do nothing
 			}
 		}
+	}()
+	for _, rule := range rules {
+		for _, target := range targets {
+			wg.Add(1)
+			go regexfilter.ScanFile(target, rule, ruleChannel, &wg)
+		}
+		if interactive {
+			fmt.Printf("Waiting for routines to finish..\n")
+		}
+		wg.Wait()
+		bufferChannel <- false
 	}
+
 	outputResults(result, interactive)
 }
 
