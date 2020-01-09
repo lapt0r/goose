@@ -24,7 +24,7 @@ func main() {
 	app.Init("", *targetPath, *interactive)
 	if *interactive {
 		printHeader()
-		fmt.Printf("Initialized with %v rules.  Running..", app.RuleCount())
+		fmt.Printf("Initialized with %v rules.  Running..\n", app.RuleCount())
 	}
 
 	app.Run(*interactive)
