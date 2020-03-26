@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/lapt0r/goose/internal/pkg/configuration"
+	"github.com/lapt0r/goose/internal/pkg/finding"
 	"github.com/lapt0r/goose/internal/pkg/loader"
 	"github.com/lapt0r/goose/internal/pkg/regexfilter"
 )
@@ -39,8 +40,8 @@ func Init(configpath string, targetpath string, interactive bool) {
 
 //Run : runs the Goose application
 func Run(interactive bool) {
-	var result []regexfilter.Finding
-	var ruleChannel = make(chan regexfilter.Finding, 4)
+	var result []finding.Finding
+	var ruleChannel = make(chan finding.Finding, 4)
 	var bufferChannel = make(chan bool)
 	var wg sync.WaitGroup
 	//anonymous buffer thread to empty the channel to prevent deadlocking
@@ -58,22 +59,21 @@ func Run(interactive bool) {
 			}
 		}
 	}()
-	for _, rule := range rules {
-		for _, target := range targets {
-			wg.Add(1)
-			go regexfilter.ScanFile(target, rule, ruleChannel, &wg)
-		}
-		if interactive {
-			fmt.Printf("Waiting for routines to finish..\n")
-		}
-		wg.Wait()
-		bufferChannel <- false
+
+	for _, target := range targets {
+		wg.Add(1)
+		go regexfilter.ScanFile(target, &rules, ruleChannel, &wg)
 	}
+	if interactive {
+		fmt.Printf("Waiting for routines to finish..\n")
+	}
+	wg.Wait()
+	bufferChannel <- false
 
 	outputResults(result, interactive)
 }
 
-func outputResults(result []regexfilter.Finding, interactive bool) {
+func outputResults(result []finding.Finding, interactive bool) {
 	if interactive {
 		fmt.Println("\n--- Scanning complete ---")
 		fmt.Printf("[%v] results\n", len(result))

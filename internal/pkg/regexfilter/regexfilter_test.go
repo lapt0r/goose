@@ -1,15 +1,17 @@
 package regexfilter
 
 import (
-	"github.com/lapt0r/goose/internal/pkg/configuration"
 	"testing"
+
+	"github.com/lapt0r/goose/internal/pkg/configuration"
+	"github.com/lapt0r/goose/internal/pkg/finding"
 )
 
 var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password = \\w{4,}", Confidence: 0.5, Severity: 1}
 var flexrule = configuration.ScanRule{Name: "Generic 8+ byte rule", Rule: "", Confidence: 0.9, Severity: 1}
 
 func TestEmptyFinding(t *testing.T) {
-	testFinding := Finding{}
+	testFinding := finding.Finding{}
 	if !testFinding.IsEmpty() {
 		t.Errorf("Expected empty finding but got %v", testFinding)
 	}
