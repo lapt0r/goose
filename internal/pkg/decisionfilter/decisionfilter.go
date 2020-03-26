@@ -8,24 +8,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/lapt0r/goose/internal/pkg/assignment"
 	"github.com/lapt0r/goose/internal/pkg/decisiontree"
 	"github.com/lapt0r/goose/internal/pkg/finding"
 	"github.com/lapt0r/goose/internal/pkg/loader"
 )
-
-//Assignment is an externally visible struct to aid in deconstructing complex assignment statements into their conceptual base form
-type Assignment struct {
-	Type      string
-	Name      string
-	Separator string
-	Value     string
-}
-
-//IsSecret returns whether or not the Assignment is considered to be a secret assignment
-func (assignment *Assignment) IsSecret() bool {
-	secretregex, _ := regexp.Compile("(?i)(secret|password|key|token)")
-	return secretregex.MatchString(assignment.Name) && assignment.Separator != "" && assignment.Value != ""
-}
 
 //ScanFile scans a provided target with the decision tree scan engine
 func ScanFile(target loader.ScanTarget, fchannel chan finding.Finding, waitgroup *sync.WaitGroup) {
@@ -56,9 +43,8 @@ func evaluateRule(input string) finding.Finding {
 			Rule:       "DecisionTree",
 			Confidence: 0.7, //todo: decision tree rules?
 			Severity:   1}
-	} else {
-		return finding.Finding{}
 	}
+	return finding.Finding{}
 }
 
 func tokenize(input string) []string {
@@ -69,10 +55,10 @@ func tokenizeWithSeparator(input string, separator string) []string {
 	return strings.Split(input, separator)
 }
 
-func filterAssignments(slice []Assignment) []Assignment {
+func filterAssignments(slice []assignment.Assignment) []assignment.Assignment {
 	result := slice[:0]
 	for _, x := range slice {
-		if x.IsSecret() {
+		if x.IsSecret() || x.IsURLCredential() || x.HasKnownTokenPrefix() {
 			result = append(result, x)
 		}
 	}
@@ -98,16 +84,16 @@ func containsXMLTag(token string) bool {
 	return regex.MatchString(token)
 }
 
-func generateAssignments(input string) []Assignment {
+func generateAssignments(input string) []assignment.Assignment {
 	//todo: some kind of normalization
 	var tokens = tokenize(input)
 	var tree = decisiontree.ConstructTree(tokens)
 	return generateAssignmentsRecursive(tree)
 }
 
-func generateAssignmentsRecursive(node *decisiontree.Node) []Assignment {
+func generateAssignmentsRecursive(node *decisiontree.Node) []assignment.Assignment {
 	//oh boy here we go
-	var result = make([]Assignment, 1)
+	var result = make([]assignment.Assignment, 1)
 	var item = &result[0]
 	var current = node
 	for {
