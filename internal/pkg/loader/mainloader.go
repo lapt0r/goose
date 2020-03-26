@@ -19,15 +19,11 @@ func GetTargets(parent string) []ScanTarget {
 	//kb todo: this inline function could use its own unit test, to refactor out
 	err := filepath.Walk(parent, func(path string, info os.FileInfo, err error) error {
 		info, infoerr := os.Stat(path)
-		if infoerr != nil {
-			fmt.Printf("error loading %v : %v", path, infoerr)
-		} else {
+		if infoerr == nil {
 			if !info.IsDir() {
 				if ValidateContent(path) {
 					files = append(files, ScanTarget{Path: path, Type: "filesystem"})
 				}
-			} else {
-				//kb todo: git repository handling
 			}
 		}
 		return nil
