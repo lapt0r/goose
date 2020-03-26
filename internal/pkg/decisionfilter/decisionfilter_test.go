@@ -188,3 +188,14 @@ func TestEvaluateRuleMatch(t *testing.T) {
 		t.Errorf("Expected confidence 0.5 and severity 1 but found confidence %v and severity %v", result.Confidence, result.Severity)
 	}
 }
+
+func TestEvaluateRuleURLCredential(t *testing.T) {
+	teststring := "admin:password123@example.com"
+	result := evaluateRule(teststring)
+	if result.IsEmpty() {
+		t.Errorf("expected 1 result but got an empty result")
+	}
+	if result.Match != teststring {
+		t.Errorf("Expected match to be like admin:password123 but was %v", result.Match)
+	}
+}
