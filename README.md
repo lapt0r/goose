@@ -21,6 +21,7 @@ Goose can be run in pipeline (default) or interactive mode.  Pipeline mode is "s
 
  * -target \<string> : The target directory to scan.  This will enumerate all files with a valid text encoding as well as the git history and scan using the provided regex rules.
  * -interactive : Runs Goose in interactive mode.  Default behavior is now pipeline-compatible.
+ * -decisiontree : Runs goose in decision-tree mode.  This overrides regex behavior and uses a parser/tokenizer and decision tree to generate findings.
 
 ## Acknowledgements
 
