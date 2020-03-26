@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/lapt0r/goose/internal/pkg/configuration"
+	"github.com/lapt0r/goose/internal/pkg/decisionfilter"
 	"github.com/lapt0r/goose/internal/pkg/finding"
 	"github.com/lapt0r/goose/internal/pkg/loader"
 	"github.com/lapt0r/goose/internal/pkg/regexfilter"
@@ -39,7 +40,7 @@ func Init(configpath string, targetpath string, interactive bool) {
 }
 
 //Run : runs the Goose application
-func Run(interactive bool) {
+func Run(interactive bool, decisionTree bool) {
 	var result []finding.Finding
 	var ruleChannel = make(chan finding.Finding, 4)
 	var bufferChannel = make(chan bool)
@@ -62,7 +63,11 @@ func Run(interactive bool) {
 
 	for _, target := range targets {
 		wg.Add(1)
-		go regexfilter.ScanFile(target, &rules, ruleChannel, &wg)
+		if decisionTree {
+			go decisionfilter.ScanFile(target, ruleChannel, &wg)
+		} else {
+			go regexfilter.ScanFile(target, &rules, ruleChannel, &wg)
+		}
 	}
 	if interactive {
 		fmt.Printf("Waiting for routines to finish..\n")

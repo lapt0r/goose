@@ -13,6 +13,7 @@ import (
 func main() {
 
 	var targetPath = flag.String("target", "", "[REQUIRED] The target file or folder to scan.  If the target is a valid git repository, Goose will enumerate its commits.")
+	var decisiontree = flag.Bool("decisiontree", false, "[DEFAULT:FALSE] Runs goose in decision tree mode.")
 	var help = flag.Bool("help", false, "Print the help screen with command line arguments for Goose.")
 	var interactive = flag.Bool("interactive", false, "[DEFAULT:FALSE] Runs the application in interactive mode")
 	flag.Parse()
@@ -24,10 +25,14 @@ func main() {
 	app.Init("", *targetPath, *interactive)
 	if *interactive {
 		printHeader()
-		fmt.Printf("Initialized with %v rules.  Running..\n", app.RuleCount())
+		if *decisiontree {
+			fmt.Print("Initialized in decision tree mode.  Running..\n")
+		} else {
+			fmt.Printf("Initialized with %v rules.  Running..\n", app.RuleCount())
+		}
 	}
 
-	app.Run(*interactive)
+	app.Run(*interactive, *decisiontree)
 }
 
 func printHeader() {
