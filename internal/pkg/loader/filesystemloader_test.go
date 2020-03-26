@@ -39,6 +39,18 @@ func TestGetByteCharsetValidLongString(t *testing.T) {
 	}
 }
 
+func TestLoaderFileEmptyFile(t *testing.T) {
+	file, err := ioutil.TempFile("", "LoaderTestEmptyFile")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	var testResult = ValidateContent(file.Name())
+	if !testResult {
+		t.Errorf("Expected result to be true but was %v", testResult)
+	}
+}
+
 func TestLoaderFileLongString(t *testing.T) {
 	file, err := ioutil.TempFile("", "LoaderTestFileLongString")
 	if err != nil {

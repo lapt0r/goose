@@ -2,6 +2,7 @@ package loader
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -18,10 +19,17 @@ func ValidateContent(path string) bool {
 	}
 	var headerBytes = make([]byte, 1024)
 	var bytesRead, headerReadError = file.Read(headerBytes)
+
+	// empty files are valid
+	if headerReadError == io.EOF {
+		return true
+	}
+
 	if headerReadError != nil {
 		validBytes = false
 		fmt.Printf("Error reading file [%v] : %v", path, headerReadError)
 	}
+
 	//kb note: important to slice to the actual number of bytes read
 	var charSet = getByteCharset(headerBytes[0:bytesRead])
 	//kb note: should support other encodings other than ISO-8859-1
