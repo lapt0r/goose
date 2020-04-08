@@ -22,5 +22,11 @@
         "Rule" : "(?i)[a-z0-9\\-_+/]{8,}",
         "Confidence" : 0.5,
         "Severity" : 2
+    },
+    {
+        "Name" : "Confluence credential",
+        "Rule" : "(?i)password\\s?[=:]\\s?['\"]?[a-z0-9!@#$%&*\\-_=+]{6,15}['\"]?",
+        "Confidence" : 0.7,
+        "Severity" : 2
     }
 ]

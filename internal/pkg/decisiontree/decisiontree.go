@@ -16,13 +16,13 @@ type Node struct {
 
 //IsType returns whether or not the node is a type declaration
 func (node *Node) IsType() bool {
-	regex, _ := regexp.Compile("(?i)(^var$|byte|string)")
+	regex, _ := regexp.Compile("(?i)(^var$|byte|string|int\\d{2}?|float|double)")
 	return regex.MatchString(node.Value)
 }
 
 //IsAssignmentOperator returns whether or not the node is an assignment operator
 func (node *Node) IsAssignmentOperator() bool {
-	regex, _ := regexp.Compile("(=|<-|:=|:)$")
+	regex, _ := regexp.Compile("^(=|<-|:=|:)$")
 	return regex.MatchString(node.Value)
 }
 

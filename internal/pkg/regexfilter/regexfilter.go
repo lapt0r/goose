@@ -15,9 +15,10 @@ import (
 )
 
 //ScanFile takes a path and a scan rule and returns a slice of findings
-func ScanFile(target loader.ScanTarget, rules *[]configuration.ScanRule, fchannel chan finding.Finding, waitgroup *sync.WaitGroup) {
+func ScanFile(target loader.ScanTarget, rules *[]configuration.ScanRule, fchannel chan []finding.Finding, waitgroup *sync.WaitGroup) {
 	defer waitgroup.Done()
 	input, err := loader.GetBytesFromScanTarget(target)
+	var findings []finding.Finding
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,11 +29,12 @@ func ScanFile(target loader.ScanTarget, rules *[]configuration.ScanRule, fchanne
 			finding := evaluateRule(scanner.Text(), rule)
 			if !finding.IsEmpty() {
 				finding.Location = fmt.Sprintf("%v : %v", target.Path, index)
-				fchannel <- finding
+				findings = append(findings, finding)
 			}
 			index++
 		}
 	}
+	fchannel <- findings
 }
 
 func evaluateRule(line string, rule configuration.ScanRule) finding.Finding {

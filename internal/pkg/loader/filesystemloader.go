@@ -4,20 +4,26 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/gogs/chardet"
 )
 
 //ValidateContent ensures that the contents of the text are valid binary encodings
 func ValidateContent(path string) bool {
-	var validBytes bool = false
+	gitpath, _ := regexp.MatchString("\\.git", path)
+	if gitpath {
+		return false
+	}
 	var file, err = os.Open(path)
 	defer file.Close()
 	if err != nil {
 		panic(err)
 	}
-	var headerBytes = make([]byte, 1024)
+
+	var headerBytes = make([]byte, 512)
 	var bytesRead, headerReadError = file.Read(headerBytes)
 
 	// empty files are valid
@@ -26,21 +32,17 @@ func ValidateContent(path string) bool {
 	}
 
 	if headerReadError != nil {
-		validBytes = false
 		fmt.Printf("Error reading file [%v] : %v", path, headerReadError)
 	}
 
-	//kb note: important to slice to the actual number of bytes read
-	var charSet = getByteCharset(headerBytes[0:bytesRead])
-	//kb note: should support other encodings other than ISO-8859-1
-	if charSet == nil {
-		//parsing failure.  Return false
+	//first, do http content type check
+	contentType := http.DetectContentType(headerBytes[0:bytesRead])
+	isImage, _ := regexp.MatchString("img", contentType)
+	if contentType == "application/octet-stream" || isImage {
 		return false
 	}
-	if charSet.Charset == "ISO-8859-1" {
-		validBytes = true
-	}
-	return validBytes
+	//charset detection for Go is pretty bad currently, until a port of UDE is available this will have to do
+	return true
 }
 
 func getByteCharset(b []byte) *chardet.Result {

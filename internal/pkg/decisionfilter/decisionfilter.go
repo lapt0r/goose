@@ -15,8 +15,14 @@ import (
 )
 
 //ScanFile scans a provided target with the decision tree scan engine
-func ScanFile(target loader.ScanTarget, fchannel chan finding.Finding, waitgroup *sync.WaitGroup) {
+func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgroup *sync.WaitGroup) {
+	defer func() {
+		if r := recover(); r != nil {
+			println("panic:" + r.(string))
+		}
+	}()
 	defer waitgroup.Done()
+	var findings []finding.Finding
 	input, err := loader.GetBytesFromScanTarget(target)
 	if err != nil {
 		log.Fatal(err)
@@ -24,13 +30,15 @@ func ScanFile(target loader.ScanTarget, fchannel chan finding.Finding, waitgroup
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
 	index := 0
 	for scanner.Scan() {
-		finding := evaluateRule(scanner.Text())
+		finding := evaluateRule(strings.TrimSpace(scanner.Text()))
 		if !finding.IsEmpty() {
 			finding.Location = fmt.Sprintf("%v : %v", target.Path, index)
-			fchannel <- finding
+			findings = append(findings, finding)
 		}
 		index++
 	}
+	//an empty finding signals that we are done
+	fchannel <- findings
 }
 
 func evaluateRule(input string) finding.Finding {

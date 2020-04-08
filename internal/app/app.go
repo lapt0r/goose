@@ -23,7 +23,7 @@ func RuleCount() int {
 }
 
 //Init : initalizes the Goose application
-func Init(configpath string, targetpath string, interactive bool) {
+func Init(configpath string, targetpath string, interactive bool, commitDepth int) {
 	if configpath == "" {
 		configpath = "config/goose_rules.json"
 	}
@@ -33,49 +33,55 @@ func Init(configpath string, targetpath string, interactive bool) {
 	if interactive {
 		fmt.Printf("Initializing Goose with target [%v]..\n", absoluteTargetPath)
 	}
-	targets = loader.GetTargets(absoluteTargetPath)
+	targets = loader.GetTargets(absoluteTargetPath, commitDepth)
 	if interactive {
-		fmt.Printf("\nGot [%v] targets\n", len(targets))
+		fmt.Printf("Got [%v] targets\n", len(targets))
 	}
 }
 
 //Run : runs the Goose application
 func Run(interactive bool, decisionTree bool) {
-	var result []finding.Finding
-	var ruleChannel = make(chan finding.Finding, 4)
-	var bufferChannel = make(chan bool)
-	var wg sync.WaitGroup
-	//anonymous buffer thread to empty the channel to prevent deadlocking
-	go func() {
-		for {
-			select {
-			case <-bufferChannel:
-				break
-			case f, ok := <-ruleChannel:
-				if ok && f.Confidence > 0.65 {
-					result = append(result, f)
-				}
-			default:
-				//do nothing
-			}
-		}
-	}()
+	var fChannel = make(chan []finding.Finding, 1)
 
+	var results []finding.Finding
+	var wg sync.WaitGroup
+	var total = len(targets)
+	var count = 0
 	for _, target := range targets {
 		wg.Add(1)
 		if decisionTree {
-			go decisionfilter.ScanFile(target, ruleChannel, &wg)
+			go decisionfilter.ScanFile(target, fChannel, &wg)
 		} else {
-			go regexfilter.ScanFile(target, &rules, ruleChannel, &wg)
+			go regexfilter.ScanFile(target, &rules, fChannel, &wg)
 		}
 	}
-	if interactive {
-		fmt.Printf("Waiting for routines to finish..\n")
-	}
-	wg.Wait()
-	bufferChannel <- false
 
-	outputResults(result, interactive)
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				println("panic:" + r.(string))
+			}
+		}()
+		if interactive {
+			fmt.Printf("Waiting for routines to finish..\n")
+		}
+		for {
+			result, _ := <-fChannel
+			//empty results are only returned by finished scan goroutines
+			if len(result) == 0 {
+				count++
+			} else {
+				results = append(results, result...)
+			}
+			if count == total {
+				close(fChannel)
+				break
+			}
+		}
+
+	}()
+	wg.Wait()
+	outputResults(results, interactive)
 }
 
 func outputResults(result []finding.Finding, interactive bool) {
@@ -88,7 +94,6 @@ func outputResults(result []finding.Finding, interactive bool) {
 	} else {
 		json, err := json.Marshal(result)
 		if err != nil {
-			//todo : should this terminate?
 			log.Fatal(err)
 		}
 		//todo(?) : support file output target or rely on caller piping to stream?

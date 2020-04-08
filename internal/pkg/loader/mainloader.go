@@ -14,7 +14,7 @@ type ScanTarget struct {
 }
 
 //GetTargets returns all files that are children of the target path
-func GetTargets(parent string) []ScanTarget {
+func GetTargets(parent string, commitDepth int) []ScanTarget {
 	var files []ScanTarget
 	//kb todo: this inline function could use its own unit test, to refactor out
 	err := filepath.Walk(parent, func(path string, info os.FileInfo, err error) error {
@@ -34,9 +34,11 @@ func GetTargets(parent string) []ScanTarget {
 	}
 	//load git targets
 	//kb todo: walk subdirectories of target and enumerate repository commits of every detected repo
-	gitTargets, gitErr := EnumerateRepositoryCommits(parent)
-	if gitErr == nil {
-		files = append(files, gitTargets...)
+	if commitDepth > 0 {
+		gitTargets, gitErr := EnumerateRepositoryFileChanges(parent, commitDepth)
+		if gitErr == nil {
+			files = append(files, gitTargets...)
+		}
 	}
 	return files
 }

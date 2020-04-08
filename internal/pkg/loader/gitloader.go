@@ -11,14 +11,14 @@ import (
 	gitobject "gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-//EnumerateRepositoryCommits : Enumerate the commmits in a target repository and return the assembled ScanTargets
-func EnumerateRepositoryCommits(parent string) ([]ScanTarget, error) {
+//EnumerateRepositoryFileChanges : Enumerate the commmits in a target repository and return the assembled ScanTargets
+func EnumerateRepositoryFileChanges(parent string, commitDepth int) ([]ScanTarget, error) {
 	var result []ScanTarget
 	repository, err := git.PlainOpen(parent)
 	if err == nil {
 		options := git.LogOptions{Order: git.LogOrderCommitterTime}
 		commits, _ := repository.Log(&options)
-		for {
+		for i := 0; i < commitDepth; i++ {
 			next, err := commits.Next()
 			if err != nil {
 				//this is an EOF error which tells us to terminate the loop
