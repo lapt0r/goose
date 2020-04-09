@@ -1,6 +1,11 @@
 package assignment
 
-import "regexp"
+import (
+	"fmt"
+	"regexp"
+
+	"github.com/lapt0r/goose/internal/pkg/reflectorfilter"
+)
 
 //Assignment is an externally visible struct to aid in deconstructing complex assignment statements into their conceptual base form
 type Assignment struct {
@@ -12,7 +17,7 @@ type Assignment struct {
 
 //IsSecret returns whether or not the Assignment is considered to be a secret assignment
 func (assignment *Assignment) IsSecret() bool {
-	secretregex, _ := regexp.Compile("(?i)(secret($|_|[()]|key)|password|(api|access)_?key|connection[a-z0-9\\-_]*string)")
+	secretregex, _ := regexp.Compile("(?i)(secret($|_|[()]|key)|password$|(api|access)_?key|connection[a-z0-9\\-_]*string)")
 	return assignment.IsValidValue() && secretregex.MatchString(assignment.Name) && assignment.Separator != "" && assignment.IsKnownSecretAssignmentType() && !secretregex.MatchString(assignment.Value)
 }
 
@@ -75,6 +80,12 @@ func (assignment *Assignment) IsDictAssignment() bool {
 
 //IsValidValue returns whether or not the value is invalid (true, false, or empty object/string)
 func (assignment *Assignment) IsValidValue() bool {
-	invalidvalue, _ := regexp.Compile("(?i)(true|false|\\[\\]|\\{\\}|''|\"\"|[01];?$|\\[\\d+\\]|test|null\\)?;?$)")
-	return !invalidvalue.MatchString(assignment.Value)
+	invalidvalue, _ := regexp.Compile("(?i)(true|false|\\[\\]|\\{\\}|''|\"\"|[01];?$|\\[\\d+\\]|test|null\\)?;?$|get|post)")
+	//valid secrets are 6 or more characters in 2020 systems.  Less than that is trivially brute-forceable.
+	return !invalidvalue.MatchString(assignment.Value) && len(assignment.Value) > 5
+}
+
+//IsReflected returns whether or not the assignment is reflected
+func (assignment *Assignment) IsReflected() bool {
+	return reflectorfilter.IsReflected(fmt.Sprintf("%v = %v", assignment.Name, assignment.Value))
 }

@@ -67,7 +67,9 @@ func filterAssignments(slice []assignment.Assignment) []assignment.Assignment {
 	result := slice[:0]
 	for _, x := range slice {
 		if x.IsSecret() || x.IsURLCredential() || x.HasKnownTokenPrefix() {
-			result = append(result, x)
+			if !x.IsReflected() {
+				result = append(result, x)
+			}
 		}
 	}
 	return result

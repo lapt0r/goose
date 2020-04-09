@@ -246,10 +246,12 @@ func TestEvaluateRuleSecretMethodCall(t *testing.T) {
 }
 
 func TestEvaluateRuleFalsePositiveBookTitle(t *testing.T) {
-	teststring := "The Secret Kingdom: Stones of Ravenglass"
-	result := evaluateRule(teststring)
-	if !result.IsEmpty() {
-		t.Errorf("expected no results")
+	teststrings := [...]string{"The Secret Kingdom: Stones of Ravenglass", "9780963146403,6778761,\"Quality Secret : The Right Way to Manage\",0,"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		}
 	}
 }
 
@@ -298,5 +300,25 @@ func TestEvaluateRuleFalsePositiveFunctionDefinitionImageBlob(t *testing.T) {
 	result := evaluateRule(teststring)
 	if !result.IsEmpty() {
 		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveReadRequestData(t *testing.T) {
+	teststrings := [...]string{"$admin_password = isset($_POST['admin_password']) ? $_POST['admin_password'] : '';"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleFalsePositiveReflected(t *testing.T) {
+	teststrings := [...]string{"private static final String PASSWORD = \"password\";"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		}
 	}
 }

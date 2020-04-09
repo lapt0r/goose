@@ -11,6 +11,7 @@ import (
 // IsReflected : Checks to see if a potential match is a partially-reflected string
 func IsReflected(potentialMatch string) bool {
 	matcher, _ := regexp.Compile("(:|:=|->|=)")
+	potentialMatch = strings.ToLower(strings.TrimSpace(potentialMatch))
 	operator := matcher.FindString(potentialMatch)
 	if operator != "" {
 		substrings := strings.SplitN(potentialMatch, operator, 2)
