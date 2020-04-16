@@ -199,3 +199,126 @@ func TestEvaluateRuleURLCredential(t *testing.T) {
 		t.Errorf("Expected match to be like admin:password123 but was %v", result.Match)
 	}
 }
+
+func TestEvaluateRuleMethodAssignmentEdgeCase(t *testing.T) {
+	teststring := "setAmazonKeys ( 'AKIAxxxxxxxxxxxxx' , 'ePvh4kxxxxxxxxxxxxxxxxxxxx');"
+	result := evaluateRule(teststring)
+	if result.IsEmpty() {
+		t.Errorf("expected 1 result but got an empty result")
+	}
+	if result.Match != teststring {
+		t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+	}
+}
+
+func TestEvaluateRuleSecretNominal(t *testing.T) {
+	teststring := "var client_secret = 'foobarbiz'"
+	result := evaluateRule(teststring)
+	if result.IsEmpty() {
+		t.Errorf("expected 1 result but got an empty result")
+	}
+	if result.Match != teststring {
+		t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+	}
+}
+
+func TestEvaluateRuleCompositeSecret(t *testing.T) {
+	teststring := "secretkey = 'foobarbiz'"
+	result := evaluateRule(teststring)
+	if result.IsEmpty() {
+		t.Errorf("expected 1 result but got an empty result")
+	}
+	if result.Match != teststring {
+		t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+	}
+}
+
+func TestEvaluateRuleSecretMethodCall(t *testing.T) {
+	//to investigate: how can we catch this in a more abstract fashion with the parser?
+	teststring := "setsecret('AKIAxxxxxxxxx')"
+	result := evaluateRule(teststring)
+	if result.IsEmpty() {
+		t.Errorf("expected 1 result but got an empty result")
+	}
+	if result.Match != teststring {
+		t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+	}
+}
+
+func TestEvaluateRuleFalsePositiveBookTitle(t *testing.T) {
+	teststrings := [...]string{"The Secret Kingdom: Stones of Ravenglass", "9780963146403,6778761,\"Quality Secret : The Right Way to Manage\",0,"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleFalsePositiveMapKeyAssignment(t *testing.T) {
+	teststring := "key = key.map( jQuery.camelCase );"
+	result := evaluateRule(teststring)
+	if !result.IsEmpty() {
+		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveIntegerSwitch(t *testing.T) {
+	teststring := "int forcePasswordChange = 0;"
+	result := evaluateRule(teststring)
+	if !result.IsEmpty() {
+		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveTestCode(t *testing.T) {
+	teststring := "$password = 'testing';"
+	result := evaluateRule(teststring)
+	if !result.IsEmpty() {
+		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveArgumentValueIndexing(t *testing.T) {
+	teststring := "$password = argv[0];"
+	result := evaluateRule(teststring)
+	if !result.IsEmpty() {
+		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveFunctionDefinitionPasswordNullDefault(t *testing.T) {
+	teststring := "public function withUserInfo($user, $password = null);"
+	result := evaluateRule(teststring)
+	if !result.IsEmpty() {
+		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveFunctionDefinitionImageBlob(t *testing.T) {
+	teststring := "        'vYRjtYRjrXtjpXtjlGNje2tazoxazoRaxoxaxoRavYRatYRatX'."
+	result := evaluateRule(teststring)
+	if !result.IsEmpty() {
+		t.Errorf("expected no results")
+	}
+}
+
+func TestEvaluateRuleFalsePositiveReadRequestData(t *testing.T) {
+	teststrings := [...]string{"$admin_password = isset($_POST['admin_password']) ? $_POST['admin_password'] : '';"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleFalsePositiveReflected(t *testing.T) {
+	teststrings := [...]string{"private static final String PASSWORD = \"password\";"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		}
+	}
+}

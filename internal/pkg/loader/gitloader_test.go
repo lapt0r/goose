@@ -16,7 +16,7 @@ func TestGitRepositoryLoadInvalidRepository(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	targets, enumErr := EnumerateRepositoryCommits(directory)
+	targets, enumErr := EnumerateRepositoryFileChanges(directory, 10)
 	if enumErr == nil {
 		t.Errorf("Expected enumerating an invalid repository to fail")
 	}
@@ -34,11 +34,11 @@ func TestGitCommitLoad(t *testing.T) {
 }
 
 func TestGitTargetEnumeration(t *testing.T) {
-	targets, enumErr := EnumerateRepositoryCommits(parentDirectory)
+	targets, enumErr := EnumerateRepositoryFileChanges(parentDirectory, 15)
 	if enumErr != nil {
 		t.Errorf("Error enumerating repository : %v", enumErr)
 	}
 	if len(targets) < 15 {
-		t.Errorf("Expected at least 15 commits but found %v", len(targets))
+		t.Errorf("Expected at least 15 objects but found %v", len(targets))
 	}
 }
