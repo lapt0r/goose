@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/lapt0r/goose/internal/pkg/configuration"
@@ -12,6 +13,7 @@ import (
 	"github.com/lapt0r/goose/internal/pkg/finding"
 	"github.com/lapt0r/goose/internal/pkg/loader"
 	"github.com/lapt0r/goose/internal/pkg/regexfilter"
+	"github.com/lapt0r/goose/internal/pkg/report"
 )
 
 var rules []configuration.ScanRule
@@ -40,7 +42,7 @@ func Init(configpath string, targetpath string, interactive bool, commitDepth in
 }
 
 //Run : runs the Goose application
-func Run(interactive bool, decisionTree bool) {
+func Run(interactive bool, decisionTree bool, outputmode string) {
 	var fChannel = make(chan []finding.Finding, 1)
 
 	var results []finding.Finding
@@ -81,10 +83,10 @@ func Run(interactive bool, decisionTree bool) {
 
 	}()
 	wg.Wait()
-	outputResults(results, interactive)
+	outputResults(results, interactive, outputmode)
 }
 
-func outputResults(result []finding.Finding, interactive bool) {
+func outputResults(result []finding.Finding, interactive bool, outputmode string) {
 	if interactive {
 		fmt.Println("\n--- Scanning complete ---")
 		fmt.Printf("[%v] results\n", len(result))
@@ -92,11 +94,19 @@ func outputResults(result []finding.Finding, interactive bool) {
 			fmt.Printf("FINDING\n-----\n%v\n", finding)
 		}
 	} else {
-		json, err := json.Marshal(result)
+		var jsonOut []byte
+		var err error
+		switch strings.ToLower(outputmode) {
+		case "gitlab":
+			jsonOut, err = report.SerializeFindingsToGitLab(result)
+		default:
+			jsonOut, err = json.Marshal(result)
+		}
+
 		if err != nil {
 			log.Fatal(err)
 		}
 		//todo(?) : support file output target or rely on caller piping to stream?
-		fmt.Printf("%v", string(json))
+		fmt.Printf("%v", string(jsonOut))
 	}
 }

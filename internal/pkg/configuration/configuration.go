@@ -11,7 +11,7 @@ type ScanRule struct {
 	Name       string
 	Rule       string
 	Confidence float64
-	Severity   int
+	Severity   string
 }
 
 //LoadConfiguration loads a set of ScanRules from a provided path target

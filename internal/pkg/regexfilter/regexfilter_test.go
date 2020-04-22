@@ -7,8 +7,8 @@ import (
 	"github.com/lapt0r/goose/internal/pkg/finding"
 )
 
-var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password = \\w{4,}", Confidence: 0.5, Severity: 1}
-var flexrule = configuration.ScanRule{Name: "Generic 8+ byte rule", Rule: "", Confidence: 0.9, Severity: 1}
+var testrule = configuration.ScanRule{Name: "TestRule", Rule: "password = \\w{4,}", Confidence: 0.5, Severity: "high"}
+var flexrule = configuration.ScanRule{Name: "Generic 8+ byte rule", Rule: "", Confidence: 0.9, Severity: "high"}
 
 func TestEmptyFinding(t *testing.T) {
 	testFinding := finding.Finding{}

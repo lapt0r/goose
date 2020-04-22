@@ -17,6 +17,7 @@ func main() {
 	var help = flag.Bool("help", false, "Print the help screen with command line arguments for Goose.")
 	var interactive = flag.Bool("interactive", false, "[DEFAULT:FALSE] Runs the application in interactive mode")
 	var commitDepth = flag.Int("commitDepth", 0, "[DEFAULT:0] Specifies the maximum commit depth to scan.")
+	var outputmode = flag.String("outputmode", "", "[DEFAULT: EMPTY] Specifies an output mode to use for integration mode.  Goose serialization is the default.")
 	flag.Parse()
 	if *help == true || *targetPath == "" {
 		flag.CommandLine.PrintDefaults()
@@ -34,7 +35,7 @@ func main() {
 		}
 	}
 	app.Init("", *targetPath, *interactive, *commitDepth)
-	app.Run(*interactive, *decisiontree)
+	app.Run(*interactive, *decisiontree, *outputmode)
 }
 
 func printHeader() {

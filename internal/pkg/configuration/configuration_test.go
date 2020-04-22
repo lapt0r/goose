@@ -14,13 +14,13 @@ var testBytes = []byte(`
 			"Name" : "TestRule",
 			"Rule" : "password",
 			"Confidence" : 0.7,
-			"Severity" : 0
+			"Severity" : "critical"
 		},
 		{
 			"Name" : "LowConfidenceRule",
 			"Rule" : "api",
 			"Confidence" : 0.3,
-			"Severity" : 5
+			"Severity" : "low"
 		}
 	]
 	`)

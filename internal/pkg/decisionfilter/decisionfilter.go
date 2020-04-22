@@ -2,7 +2,6 @@ package decisionfilter
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -28,12 +27,12 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 		log.Fatal(err)
 	}
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
-	index := 0
+	index := 1 //Lines of code start at 1
 	for scanner.Scan() {
-		finding := evaluateRule(strings.TrimSpace(scanner.Text()))
-		if !finding.IsEmpty() {
-			finding.Location = fmt.Sprintf("%v : %v", target.Path, index)
-			findings = append(findings, finding)
+		f := evaluateRule(strings.TrimSpace(scanner.Text()))
+		if !f.IsEmpty() {
+			f.Location = finding.Location{Path: target.Path, Line: index}
+			findings = append(findings, f)
 		}
 		index++
 	}
@@ -47,10 +46,10 @@ func evaluateRule(input string) finding.Finding {
 	if len(filtered) > 0 {
 		return finding.Finding{
 			Match:      input,
-			Location:   "NOTSET",
+			Location:   finding.Location{},
 			Rule:       "DecisionTree",
-			Confidence: 0.7, //todo: decision tree rules?
-			Severity:   1}
+			Confidence: 0.7,    //todo: decision tree rules?
+			Severity:   "high"} //todo: decision tree sets severity?
 	}
 	return finding.Finding{}
 }
