@@ -322,3 +322,15 @@ func TestEvaluateRuleFalsePositiveReflected(t *testing.T) {
 		}
 	}
 }
+
+func TestEvaluateRuleFalsePositiveJSConst(t *testing.T) {
+	teststrings := [...]string{"const repeatPassword = body.repeat", "public passwordControl = new FormControl('', [Validators.required])"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
