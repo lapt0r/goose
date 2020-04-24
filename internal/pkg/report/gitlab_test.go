@@ -10,7 +10,7 @@ import (
 
 func TestSerializeGitLabReport(t *testing.T) {
 	l := finding.Location{
-		Path: "foo/bar/biz.php",
+		Path: "/foo/bar/biz.php",
 		Line: 10}
 	f := finding.Finding{
 		Match:      "password = s00persekr1t",
@@ -20,7 +20,7 @@ func TestSerializeGitLabReport(t *testing.T) {
 		Severity:   "high",
 	}
 	findings := []finding.Finding{f}
-	report, err := SerializeFindingsToGitLab(findings)
+	report, err := SerializeFindingsToGitLab(findings, "/foo/")
 	if err != nil {
 		t.Errorf("Error while serializing json: %v", err)
 	}
@@ -29,7 +29,8 @@ func TestSerializeGitLabReport(t *testing.T) {
 	if len(r.Vulnerabilities) == 0 {
 		t.Errorf("Expected 1 vulnerability but found 0")
 	}
-	if r.Vulnerabilities[0].Location.File != f.Location.Path {
+	//this is a test of GitLab path-relative output
+	if r.Vulnerabilities[0].Location.File != "bar/biz.php" {
 		t.Errorf("Path from finding %v did not match path from report %v", f.Location.Path, r.Vulnerabilities[0].Location.File)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -17,6 +18,7 @@ import (
 )
 
 var rules []configuration.ScanRule
+var absoluteTargetPath string
 var targets []loader.ScanTarget
 
 //RuleCount : Get count of rules initialized by application.
@@ -31,7 +33,7 @@ func Init(configpath string, targetpath string, interactive bool, commitDepth in
 	}
 	//todo : application configuration tuning knobs (confidence intervals, etc)
 	rules = configuration.LoadConfiguration(configpath)
-	absoluteTargetPath, _ := filepath.Abs(targetpath)
+	absoluteTargetPath, _ = filepath.Abs(targetpath)
 	if interactive {
 		fmt.Printf("Initializing Goose with target [%v]..\n", absoluteTargetPath)
 	}
@@ -42,7 +44,7 @@ func Init(configpath string, targetpath string, interactive bool, commitDepth in
 }
 
 //Run : runs the Goose application
-func Run(interactive bool, decisionTree bool, outputmode string) {
+func Run(interactive bool, decisionTree bool, outputmode string, filterPaths string) {
 	var fChannel = make(chan []finding.Finding, 1)
 
 	var results []finding.Finding
@@ -83,7 +85,21 @@ func Run(interactive bool, decisionTree bool, outputmode string) {
 
 	}()
 	wg.Wait()
+	results = filterResults(results, strings.Split(filterPaths, ","))
 	outputResults(results, interactive, outputmode)
+}
+
+func filterResults(findings []finding.Finding, filterPaths []string) []finding.Finding {
+	var result []finding.Finding
+	for _, p := range filterPaths {
+		for _, f := range findings {
+			isMatch, _ := regexp.MatchString(p, f.Location.Path)
+			if !isMatch {
+				result = append(result, f)
+			}
+		}
+	}
+	return result
 }
 
 func outputResults(result []finding.Finding, interactive bool, outputmode string) {
@@ -98,7 +114,7 @@ func outputResults(result []finding.Finding, interactive bool, outputmode string
 		var err error
 		switch strings.ToLower(outputmode) {
 		case "gitlab":
-			jsonOut, err = report.SerializeFindingsToGitLab(result)
+			jsonOut, err = report.SerializeFindingsToGitLab(result, absoluteTargetPath)
 		default:
 			jsonOut, err = json.Marshal(result)
 		}

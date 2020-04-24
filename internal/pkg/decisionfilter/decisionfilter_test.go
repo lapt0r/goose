@@ -212,13 +212,17 @@ func TestEvaluateRuleMethodAssignmentEdgeCase(t *testing.T) {
 }
 
 func TestEvaluateRuleSecretNominal(t *testing.T) {
-	teststring := "var client_secret = 'foobarbiz'"
-	result := evaluateRule(teststring)
-	if result.IsEmpty() {
-		t.Errorf("expected 1 result but got an empty result")
-	}
-	if result.Match != teststring {
-		t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+	teststrings := [...]string{"var client_secret = 'foobarbiz'", "//api_token = \"DEADBEEFDEADBEEF\""}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if result.IsEmpty() {
+			t.Errorf("expected 1 result but got an empty result")
+		}
+		if result.Match != teststring {
+			t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+		} else {
+			t.Logf("test passed for %v", teststring)
+		}
 	}
 }
 
@@ -324,7 +328,7 @@ func TestEvaluateRuleFalsePositiveReflected(t *testing.T) {
 }
 
 func TestEvaluateRuleFalsePositiveJSConst(t *testing.T) {
-	teststrings := [...]string{"const repeatPassword = body.repeat", "public passwordControl = new FormControl('', [Validators.required])"}
+	teststrings := [...]string{"const repeatPassword = body.repeat", "public passwordControl = new FormControl('', [Validators.required])", "const newPassword = query.new"}
 	for _, teststring := range teststrings {
 		result := evaluateRule(teststring)
 		if !result.IsEmpty() {

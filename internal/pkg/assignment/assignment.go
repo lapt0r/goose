@@ -17,13 +17,13 @@ type Assignment struct {
 
 //IsSecret returns whether or not the Assignment is considered to be a secret assignment
 func (assignment *Assignment) IsSecret() bool {
-	secretregex, _ := regexp.Compile("(?i)(secret($|_|[()]|key)|password$|(api|access)_?key|connection[a-z0-9\\-_]*string)")
+	secretregex, _ := regexp.Compile("(?i)(secret($|_|[()]|key)|password$|(api|access)_?(key|token)|connection[a-z0-9\\-_]*string)")
 	return assignment.IsValidValue() && secretregex.MatchString(assignment.Name) && assignment.Separator != "" && assignment.IsKnownSecretAssignmentType() && !secretregex.MatchString(assignment.Value)
 }
 
 //IsConfigAssignment returns whether or not the assignment matches a configuration value
 func (assignment *Assignment) IsConfigAssignment() bool {
-	return assignment.Name != "" && assignment.Separator != "" && (assignment.IsStringLiteral() || assignment.IsUnquotedString())
+	return assignment.Type == "" && assignment.Name != "" && assignment.Separator != "" && (assignment.IsStringLiteral() || assignment.IsUnquotedString())
 }
 
 //IsKnownSecretAssignmentType returns whether or not the assignment is a known secret assignment type
@@ -56,7 +56,7 @@ func (assignment *Assignment) IsTokenAssignment() bool {
 
 //IsStringLiteral checks if the assignment is a string literal
 func (assignment *Assignment) IsStringLiteral() bool {
-	stringliteral, _ := regexp.Compile("[\"'][^\"']'+[\"']")
+	stringliteral, _ := regexp.Compile("[\"'][^\"']+[\"']")
 	return stringliteral.MatchString(assignment.Value)
 }
 
