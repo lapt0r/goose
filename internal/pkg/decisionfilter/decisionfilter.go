@@ -29,10 +29,12 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
 	index := 1 //Lines of code start at 1
 	for scanner.Scan() {
-		f := evaluateRule(strings.TrimSpace(scanner.Text()))
-		if !f.IsEmpty() {
-			f.Location = finding.Location{Path: target.Path, Line: index}
-			findings = append(findings, f)
+		if regexp.MustCompile("(password|token|secret|key)").MatchString(scanner.Text()) {
+			f := evaluateRule(strings.TrimSpace(scanner.Text()))
+			if !f.IsEmpty() {
+				f.Location = finding.Location{Path: target.Path, Line: index}
+				findings = append(findings, f)
+			}
 		}
 		index++
 	}
