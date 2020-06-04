@@ -84,7 +84,7 @@ func tokenizeWithSeparator(input string, separator string) []string {
 func filterAssignments(slice []assignment.Assignment) []assignment.Assignment {
 	result := slice[:0]
 	for _, x := range slice {
-		if x.IsSecret() || x.IsURLCredential() || x.HasKnownTokenPrefix() {
+		if x.IsCommandLineArg() || x.IsSecret() || x.IsURLCredential() || x.HasKnownTokenPrefix() {
 			if !x.IsReflected() {
 				result = append(result, x)
 			}
@@ -125,7 +125,14 @@ func generateAssignmentsRecursive(node *decisiontree.Node) []assignment.Assignme
 	var item = &result[0]
 	var current = node
 	for {
-		if current.IsType() {
+		if current.IsCmdLineArgument() {
+			item.Name = current.Value
+			if current.HasNext() {
+				item.Value = current.Next.Value
+				result = append(result, generateAssignmentsRecursive(current.Next)...)
+			}
+			break
+		} else if current.IsType() {
 			item.Type = current.Value
 		} else if current.IsAssignmentOperator() {
 			item.Separator = current.Value

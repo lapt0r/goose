@@ -15,9 +15,16 @@ type Assignment struct {
 	Value     string
 }
 
+//IsCommandLineArg returns whether or not the Assignment is a command line argument
+func (assignment *Assignment) IsCommandLineArg() bool {
+	cmdLineRegex := regexp.MustCompile("(?i)--?pa?s?s?wo?r?d")
+	envVarRegex := regexp.MustCompile("(\\$\\w+|%\\w+%|\\$[{(]\\w+[})])")
+	return cmdLineRegex.MatchString(assignment.Name) && !envVarRegex.MatchString(assignment.Value)
+}
+
 //IsSecret returns whether or not the Assignment is considered to be a secret assignment
 func (assignment *Assignment) IsSecret() bool {
-	secretregex, _ := regexp.Compile("(?i)(secret($|_|[()]|key)|password$|(api|access)_?(key|token)|connection[a-z0-9\\-_]*string)")
+	secretregex := regexp.MustCompile("(?i)(secret($|_|[()]|key)|password$|(api|access)_?(key|token)|connection[a-z0-9\\-_]*string)")
 	return assignment.IsValidValue() && secretregex.MatchString(assignment.Name) && assignment.Separator != "" && assignment.IsKnownSecretAssignmentType() && !secretregex.MatchString(assignment.Value)
 }
 

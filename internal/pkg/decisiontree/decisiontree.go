@@ -20,6 +20,12 @@ func (node *Node) IsType() bool {
 	return regex.MatchString(node.Value)
 }
 
+//IsCmdLineArgument returns whether or not the node is a command line argument
+func (node *Node) IsCmdLineArgument() bool {
+	regex := regexp.MustCompile("(?i)--?\\w+")
+	return regex.MatchString(node.Value)
+}
+
 //IsAssignmentOperator returns whether or not the node is an assignment operator
 func (node *Node) IsAssignmentOperator() bool {
 	regex, _ := regexp.Compile("^(=|<-|:=|:)$")

@@ -338,3 +338,39 @@ func TestEvaluateRuleFalsePositiveJSConst(t *testing.T) {
 		}
 	}
 }
+
+func TestEvaluateRuleTruePositiveXMLNode(t *testing.T) {
+	teststrings := [...]string{"[<add key=\"password\" value=\"s00pers3krit\"/>"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if result.IsEmpty() {
+			t.Errorf("expected 1 results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleTruePositiveCommandLineArgument(t *testing.T) {
+	teststrings := [...]string{"<command>svn co --username test --password test --no-auth-cache http://www.somedomain.tld/some/path/to/resource</command>", "-username foo -password bar -someflag"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if result.IsEmpty() {
+			t.Errorf("expected 1 results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleFalsePositiveCommandLineArgument(t *testing.T) {
+	teststrings := [...]string{"<command>svn co --username test --password %PASSWORD% --no-auth-cache http://www.somedomain.tld/some/path/to/resource</command>", "-username foo -password $PASSWORD -someflag", "-username foo -password ${PASSWORD} -someflag"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
