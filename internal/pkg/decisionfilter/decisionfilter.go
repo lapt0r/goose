@@ -44,6 +44,19 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 
 func evaluateRule(input string) finding.Finding {
 	var assignments = generateAssignments(input)
+	if containsXMLTag(assignments[0].Name) && regexp.MustCompile("add").MatchString(assignments[0].Name) {
+		// this is almost certainly an XML tag
+		for _, f := range assignments {
+			if regexp.MustCompile("password").MatchString(f.Value) {
+				return finding.Finding{
+					Match:      input,
+					Location:   finding.Location{},
+					Rule:       "DecisionTree",
+					Confidence: 0.7,    //todo: decision tree rules?
+					Severity:   "high"} //todo: decision tree sets severity?
+			}
+		}
+	}
 	var filtered = filterAssignments(assignments)
 	if len(filtered) > 0 {
 		return finding.Finding{
@@ -53,6 +66,7 @@ func evaluateRule(input string) finding.Finding {
 			Confidence: 0.7,    //todo: decision tree rules?
 			Severity:   "high"} //todo: decision tree sets severity?
 	}
+
 	return finding.Finding{}
 }
 
