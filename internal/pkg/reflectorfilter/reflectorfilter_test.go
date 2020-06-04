@@ -31,10 +31,10 @@ func TestIsReflectedReturnsFalseOnNonReflectedString(t *testing.T) {
 	}
 }
 
-func TestIsReflectedReturnsFalseOnSubsetString(t *testing.T) {
+func TestIsReflectedReturnsTrueOnSubsetString(t *testing.T) {
 	result := IsReflected(valueSubsetFinding)
-	if result {
-		t.Errorf("Expected result to be false but was %v for %v", result, nonReflectedFinding)
+	if !result {
+		t.Errorf("Expected result to be true but was %v for %v", result, nonReflectedFinding)
 	}
 }
 

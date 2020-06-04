@@ -13,9 +13,9 @@ require (
 	github.com/jmank88/nuts v0.4.0 // indirect
 	github.com/nightlyone/lockfile v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
+	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/sdboyer/constext v0.0.0-20170321163424-836a14457353 // indirect
-	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
+	gitlab.com/gitlab-org/security-products/analyzers/common/v2 v2.9.1
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/vmarkovtsev/go-lcss.v1 v1.0.0-20181020221121-dfc501d07ea0
 )

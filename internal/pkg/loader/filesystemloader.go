@@ -1,9 +1,9 @@
 package loader
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -32,12 +32,12 @@ func ValidateContent(path string) bool {
 	}
 
 	if headerReadError != nil {
-		fmt.Printf("Error reading file [%v] : %v", path, headerReadError)
+		log.Printf("Error reading file [%v] : %v", path, headerReadError)
 	}
 
 	//first, do http content type check
 	contentType := http.DetectContentType(headerBytes[0:bytesRead])
-	isImage, _ := regexp.MatchString("img", contentType)
+	isImage, _ := regexp.MatchString("image", contentType)
 	if contentType == "application/octet-stream" || isImage {
 		return false
 	}

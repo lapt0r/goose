@@ -212,13 +212,17 @@ func TestEvaluateRuleMethodAssignmentEdgeCase(t *testing.T) {
 }
 
 func TestEvaluateRuleSecretNominal(t *testing.T) {
-	teststring := "var client_secret = 'foobarbiz'"
-	result := evaluateRule(teststring)
-	if result.IsEmpty() {
-		t.Errorf("expected 1 result but got an empty result")
-	}
-	if result.Match != teststring {
-		t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+	teststrings := [...]string{"var client_secret = 'foobarbiz'", "//api_token = \"DEADBEEFDEADBEEF\""}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if result.IsEmpty() {
+			t.Errorf("expected 1 result but got an empty result")
+		}
+		if result.Match != teststring {
+			t.Errorf("Expected match to be like %v but was %v", teststring, result.Match)
+		} else {
+			t.Logf("test passed for %v", teststring)
+		}
 	}
 }
 
@@ -319,6 +323,54 @@ func TestEvaluateRuleFalsePositiveReflected(t *testing.T) {
 		result := evaluateRule(teststring)
 		if !result.IsEmpty() {
 			t.Errorf("expected no results for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleFalsePositiveJSConst(t *testing.T) {
+	teststrings := [...]string{"const repeatPassword = body.repeat", "public passwordControl = new FormControl('', [Validators.required])", "const newPassword = query.new"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleTruePositiveXMLNode(t *testing.T) {
+	teststrings := [...]string{"[<add key=\"password\" value=\"s00pers3krit\"/>"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if result.IsEmpty() {
+			t.Errorf("expected 1 results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleTruePositiveCommandLineArgument(t *testing.T) {
+	teststrings := [...]string{"<command>svn co --username test --password test --no-auth-cache http://www.somedomain.tld/some/path/to/resource</command>", "-username foo -password bar -someflag"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if result.IsEmpty() {
+			t.Errorf("expected 1 results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
+		}
+	}
+}
+
+func TestEvaluateRuleFalsePositiveCommandLineArgument(t *testing.T) {
+	teststrings := [...]string{"<command>svn co --username test --password %PASSWORD% --no-auth-cache http://www.somedomain.tld/some/path/to/resource</command>", "-username foo -password $PASSWORD -someflag", "-username foo -password ${PASSWORD} -someflag"}
+	for _, teststring := range teststrings {
+		result := evaluateRule(teststring)
+		if !result.IsEmpty() {
+			t.Errorf("expected no results for %v", teststring)
+		} else {
+			t.Logf("Test passed for %v", teststring)
 		}
 	}
 }

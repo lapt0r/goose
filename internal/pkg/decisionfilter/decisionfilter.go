@@ -2,7 +2,6 @@ package decisionfilter
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -14,6 +13,8 @@ import (
 	"github.com/lapt0r/goose/internal/pkg/loader"
 )
 
+var addTagRegexp = regexp.MustCompile("add")
+
 //ScanFile scans a provided target with the decision tree scan engine
 func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgroup *sync.WaitGroup) {
 	defer func() {
@@ -23,34 +24,51 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 	}()
 	defer waitgroup.Done()
 	var findings []finding.Finding
+	var secretRegexp = regexp.MustCompile("(password|token|secret|key)")
 	input, err := loader.GetBytesFromScanTarget(target)
 	if err != nil {
 		log.Fatal(err)
 	}
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
-	index := 0
+	index := 1 //Lines of code start at 1
 	for scanner.Scan() {
-		finding := evaluateRule(strings.TrimSpace(scanner.Text()))
-		if !finding.IsEmpty() {
-			finding.Location = fmt.Sprintf("%v : %v", target.Path, index)
-			findings = append(findings, finding)
+		text := scanner.Text()
+		if secretRegexp.MatchString(text) {
+			f := evaluateRule(strings.TrimSpace(text))
+			if !f.IsEmpty() {
+				f.Location = finding.Location{Path: target.Path, Line: index}
+				findings = append(findings, f)
+			}
 		}
 		index++
 	}
-	//an empty finding signals that we are done
 	fchannel <- findings
 }
 
 func evaluateRule(input string) finding.Finding {
 	var assignments = generateAssignments(input)
-	var filtered = filterAssignments(assignments)
-	if len(filtered) > 0 {
-		return finding.Finding{
-			Match:      input,
-			Location:   "NOTSET",
-			Rule:       "DecisionTree",
-			Confidence: 0.7, //todo: decision tree rules?
-			Severity:   1}
+	if containsXMLTag(assignments[0].Name) && addTagRegexp.MatchString(assignments[0].Name) {
+		// this is almost certainly an XML tag
+		for _, f := range assignments {
+			if regexp.MustCompile("password").MatchString(f.Value) {
+				return finding.Finding{
+					Match:      input,
+					Location:   finding.Location{},
+					Rule:       "DecisionTree",
+					Confidence: 0.7,    //todo: decision tree rules?
+					Severity:   "high"} //todo: decision tree sets severity?
+			}
+		}
+	} else {
+		var filtered = filterAssignments(assignments)
+		if len(filtered) > 0 {
+			return finding.Finding{
+				Match:      input,
+				Location:   finding.Location{},
+				Rule:       "DecisionTree",
+				Confidence: 0.7,    //todo: decision tree rules?
+				Severity:   "high"} //todo: decision tree sets severity?
+		}
 	}
 	return finding.Finding{}
 }
@@ -66,7 +84,7 @@ func tokenizeWithSeparator(input string, separator string) []string {
 func filterAssignments(slice []assignment.Assignment) []assignment.Assignment {
 	result := slice[:0]
 	for _, x := range slice {
-		if x.IsSecret() || x.IsURLCredential() || x.HasKnownTokenPrefix() {
+		if x.IsCommandLineArg() || x.IsSecret() || x.IsURLCredential() || x.HasKnownTokenPrefix() {
 			if !x.IsReflected() {
 				result = append(result, x)
 			}
@@ -107,7 +125,14 @@ func generateAssignmentsRecursive(node *decisiontree.Node) []assignment.Assignme
 	var item = &result[0]
 	var current = node
 	for {
-		if current.IsType() {
+		if current.IsCmdLineArgument() {
+			item.Name = current.Value
+			if current.HasNext() {
+				item.Value = current.Next.Value
+				result = append(result, generateAssignmentsRecursive(current.Next)...)
+			}
+			break
+		} else if current.IsType() {
 			item.Type = current.Value
 		} else if current.IsAssignmentOperator() {
 			item.Separator = current.Value

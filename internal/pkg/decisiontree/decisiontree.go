@@ -16,7 +16,13 @@ type Node struct {
 
 //IsType returns whether or not the node is a type declaration
 func (node *Node) IsType() bool {
-	regex, _ := regexp.Compile("(?i)(^var$|byte|string|int\\d{2}?|float|double)")
+	regex, _ := regexp.Compile("(?i)(^var$|byte|string|int\\d{2}?|float|double|const$)")
+	return regex.MatchString(node.Value)
+}
+
+//IsCmdLineArgument returns whether or not the node is a command line argument
+func (node *Node) IsCmdLineArgument() bool {
+	regex := regexp.MustCompile("(?i)--?\\w+")
 	return regex.MatchString(node.Value)
 }
 

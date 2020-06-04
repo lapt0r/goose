@@ -2,7 +2,6 @@ package regexfilter
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -23,13 +22,13 @@ func ScanFile(target loader.ScanTarget, rules *[]configuration.ScanRule, fchanne
 		log.Fatal(err)
 	}
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
-	index := 0
+	index := 1 //lines of code start at one
 	for scanner.Scan() {
 		for _, rule := range *rules {
-			finding := evaluateRule(scanner.Text(), rule)
-			if !finding.IsEmpty() {
-				finding.Location = fmt.Sprintf("%v : %v", target.Path, index)
-				findings = append(findings, finding)
+			f := evaluateRule(scanner.Text(), rule)
+			if !f.IsEmpty() {
+				f.Location = finding.Location{Path: target.Path, Line: index}
+				findings = append(findings, f)
 			}
 			index++
 		}
@@ -47,7 +46,7 @@ func evaluateRule(line string, rule configuration.ScanRule) finding.Finding {
 	if match != "" && reflectorfilter.IsReflected(match) == false {
 		return finding.Finding{
 			Match:      match,
-			Location:   "NOTSET",
+			Location:   finding.Location{},
 			Rule:       rule.Rule,
 			Confidence: rule.Confidence,
 			Severity:   rule.Severity}
