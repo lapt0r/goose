@@ -13,6 +13,8 @@ import (
 	"github.com/lapt0r/goose/internal/pkg/loader"
 )
 
+var addTagRegexp = regexp.MustCompile("add")
+
 //ScanFile scans a provided target with the decision tree scan engine
 func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgroup *sync.WaitGroup) {
 	defer func() {
@@ -22,6 +24,7 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 	}()
 	defer waitgroup.Done()
 	var findings []finding.Finding
+	var secretRegexp = regexp.MustCompile("(password|token|secret|key)")
 	input, err := loader.GetBytesFromScanTarget(target)
 	if err != nil {
 		log.Fatal(err)
@@ -29,8 +32,9 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 	scanner := bufio.NewScanner(strings.NewReader(string(input)))
 	index := 1 //Lines of code start at 1
 	for scanner.Scan() {
-		if regexp.MustCompile("(password|token|secret|key)").MatchString(scanner.Text()) {
-			f := evaluateRule(strings.TrimSpace(scanner.Text()))
+		text := scanner.Text()
+		if secretRegexp.MatchString(text) {
+			f := evaluateRule(strings.TrimSpace(text))
 			if !f.IsEmpty() {
 				f.Location = finding.Location{Path: target.Path, Line: index}
 				findings = append(findings, f)
@@ -38,13 +42,12 @@ func ScanFile(target loader.ScanTarget, fchannel chan []finding.Finding, waitgro
 		}
 		index++
 	}
-	//an empty finding signals that we are done
 	fchannel <- findings
 }
 
 func evaluateRule(input string) finding.Finding {
 	var assignments = generateAssignments(input)
-	if containsXMLTag(assignments[0].Name) && regexp.MustCompile("add").MatchString(assignments[0].Name) {
+	if containsXMLTag(assignments[0].Name) && addTagRegexp.MatchString(assignments[0].Name) {
 		// this is almost certainly an XML tag
 		for _, f := range assignments {
 			if regexp.MustCompile("password").MatchString(f.Value) {
@@ -56,17 +59,17 @@ func evaluateRule(input string) finding.Finding {
 					Severity:   "high"} //todo: decision tree sets severity?
 			}
 		}
+	} else {
+		var filtered = filterAssignments(assignments)
+		if len(filtered) > 0 {
+			return finding.Finding{
+				Match:      input,
+				Location:   finding.Location{},
+				Rule:       "DecisionTree",
+				Confidence: 0.7,    //todo: decision tree rules?
+				Severity:   "high"} //todo: decision tree sets severity?
+		}
 	}
-	var filtered = filterAssignments(assignments)
-	if len(filtered) > 0 {
-		return finding.Finding{
-			Match:      input,
-			Location:   finding.Location{},
-			Rule:       "DecisionTree",
-			Confidence: 0.7,    //todo: decision tree rules?
-			Severity:   "high"} //todo: decision tree sets severity?
-	}
-
 	return finding.Finding{}
 }
 

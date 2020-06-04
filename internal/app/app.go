@@ -22,6 +22,14 @@ var rules []configuration.ScanRule
 var absoluteTargetPath string
 var targets []loader.ScanTarget
 
+//debug function for finding expensive calls.
+func recordTime(start time.Time, name string) {
+	elapsed := time.Since(start)
+	if elapsed > time.Duration(10*time.Second) {
+		log.Printf("WARN:: %s took %s", name, elapsed)
+	}
+}
+
 //RuleCount : Get count of rules initialized by application.
 func RuleCount() int {
 	return len(rules)
@@ -36,48 +44,51 @@ func Init(configpath string, targetpath string, interactive bool, commitDepth in
 	rules = configuration.LoadConfiguration(configpath)
 	absoluteTargetPath, _ = filepath.Abs(targetpath)
 	if interactive {
-		fmt.Printf("[%v] Initializing Goose with target [%v]..\n", time.Now().Format(time.RFC1123), absoluteTargetPath)
+		log.Printf("Initializing Goose with target [%v]..\n", absoluteTargetPath)
 	}
 	targets = loader.GetTargets(absoluteTargetPath, commitDepth)
 	if interactive {
-		fmt.Printf("[%v] Got [%v] targets\n", time.Now().Format(time.RFC1123), len(targets))
+		log.Printf("Got [%v] targets\n", len(targets))
 	}
 }
 
 //Run : runs the Goose application
 func Run(interactive bool, decisionTree bool, outputmode string, filterPaths string) {
 	//todo: configurable concurrency
-	var concurrency = 400
+	var concurrency = 5
 	var fChannel = make(chan []finding.Finding, concurrency)
 	var semaphore = make(chan bool, concurrency)
 	var results []finding.Finding
 	var wg sync.WaitGroup
+	var qwg sync.WaitGroup
 	var total = len(targets)
 	var count = 0
-	go func() {
+	go func(wg *sync.WaitGroup) {
+		qwg.Add(1)
+		defer qwg.Done()
 		defer func() {
 			if r := recover(); r != nil {
 				println("panic:" + r.(string))
 			}
 		}()
 		if interactive {
-			fmt.Printf("[%v] Waiting for routines to finish..\n", time.Now().Format(time.RFC1123))
+			log.Printf("Waiting for routines to finish..\n")
 		}
 		for {
 			result, _ := <-fChannel
-			//empty results are only returned by finished scan goroutines
-			if len(result) == 0 {
-				count++
-			} else {
+			//only append if result count was non-zero
+			if len(result) != 0 {
 				results = append(results, result...)
 			}
+			count++
 			if count == total {
 				close(fChannel)
 				break
 			}
 		}
-
-	}()
+		wg.Wait()
+		return
+	}(&wg)
 	for _, target := range targets {
 		wg.Add(1)
 		semaphore <- true
@@ -93,7 +104,7 @@ func Run(interactive bool, decisionTree bool, outputmode string, filterPaths str
 	for i := 0; i < cap(semaphore); i++ {
 		semaphore <- true
 	}
-	wg.Wait()
+	qwg.Wait()
 	results = filterResults(results, strings.Split(filterPaths, ","))
 	outputResults(results, interactive, outputmode)
 }
@@ -114,7 +125,7 @@ func filterResults(findings []finding.Finding, filterPaths []string) []finding.F
 func outputResults(result []finding.Finding, interactive bool, outputmode string) {
 	if interactive {
 		fmt.Println("\n--- Scanning complete ---")
-		fmt.Printf("[%v] [%v] results\n", time.Now().Format(time.RFC1123), len(result))
+		log.Printf("[%v] results\n", len(result))
 		for _, finding := range result {
 			fmt.Printf("FINDING\n-----\n%v\n", finding)
 		}

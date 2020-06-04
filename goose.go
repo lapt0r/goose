@@ -28,12 +28,12 @@ func main() {
 	if *interactive {
 		printHeader()
 		if *commitDepth > 0 {
-			fmt.Printf("Scanning git commits to a depth of [%v]..", *commitDepth)
+			log.Printf("Scanning git commits to a depth of [%v]..", *commitDepth)
 		}
 		if *decisiontree {
-			fmt.Print("Initialized in decision tree mode.  Running..\n")
+			log.Printf("Initialized in decision tree mode.  Running..\n")
 		} else {
-			fmt.Printf("Initialized with %v rules.  Running..\n", app.RuleCount())
+			log.Printf("Initialized with %v rules.  Running..\n", app.RuleCount())
 		}
 	}
 	app.Init(*configpath, *targetPath, *interactive, *commitDepth)
