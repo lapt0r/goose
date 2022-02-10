@@ -5,9 +5,10 @@
 
 trigger:
 - master
-
 pool:
-  vmImage: returntocorp/semgrep-agent:v1
+  vmImage: 'ubuntu-18.04'
+
+container: returntocorp/semgrep-agent:v1
 
 steps:
 - script: semgrep-agent --config auto
