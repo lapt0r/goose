@@ -19,4 +19,4 @@ jobs:
       command: login
       containerRegistry: "Docker Registry"
   - script: |
-      docker run -v $(pwd):/src --workdir /src returntocorp/semgrep-agent:v1 semgrep-agent --config auto 
+      docker run -v $(pwd):/src --workdir /src --env SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN returntocorp/semgrep-agent:v1 semgrep-agent --config auto 
